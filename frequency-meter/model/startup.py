@@ -4,41 +4,24 @@
 import sys
 # Third party libraries
 from PyQt4 import QtGui, QtCore
+# Local libraries
+from view import interface
 
-class Example(QtGui.QWidget):
+class MainWindow(QtGui.QMainWindow, interface.Ui_MainWindow):
     
     def __init__(self):
-        QtGui.QWidget.__init__(self)
-        self.initUI()
+        QtGui.QMainWindow.__init__(self)
+        self.setupUi(self)
+        self.left2rightButton_2.clicked.connect(self.left2right)
 
-    def initUI(self):
-    	# Button por quitting the program.
-        quit_btn = QtGui.QPushButton('Quit', self)
-        quit_btn.clicked.connect(QtCore.QCoreApplication.instance().quit)
-        quit_btn.setToolTip('This is a <b>QPushButton</b> widget')
-        quit_btn.resize(quit_btn.sizeHint())
-        quit_btn.move(50, 50)       
-    	# Button por quitting the program.
-        aux_btn = QtGui.QPushButton('Aux', self)
-        aux_btn.setToolTip('This is a <b>QPushButton</b> widget')
-        aux_btn.resize(aux_btn.sizeHint())
-        aux_btn.move(200, 50)
-        # UI config
-        self.setGeometry(300, 300, 800, 600)
-        self.setWindowTitle('Tooltips')    
-        self.show()
-
-    def closeEvent(self, event):
-        reply = QtGui.QMessageBox.question(self, 'Message',
-            "Are you sure to quit?", QtGui.QMessageBox.Yes |
-            QtGui.QMessageBox.No, QtGui.QMessageBox.No)
-
-        if reply == QtGui.QMessageBox.Yes:
-            event.accept()
-        else:
-            event.ignore() 
+    def left2right(self):
+        listItems=self.listWidget.selectedItems()
+        for item in listItems:
+            self.listWidget2.addItem(item)
+            self.listWidget.takeItem(self.listWidget.row(item))
 
 def run():
     app = QtGui.QApplication(sys.argv)
-    ex = Example()
+    form = MainWindow()
+    form.show()
     sys.exit(app.exec_())
