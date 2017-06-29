@@ -27,3 +27,6 @@ wheels/
 
 # Sphinx documentation
 docs/_build/
+
+# Program logs
+*.log
