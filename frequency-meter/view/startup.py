@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 """Application main executable, for initializing the whole program"""
 # Standard libraries
+import glob
 import logging
 import os
 import sys
 # Third party libraries
 from PyQt4 import QtGui, QtCore
 # Local libraries
+from view import device_manager
 from view import interface
 
 
@@ -73,6 +75,8 @@ class MainWindow(QtGui.QMainWindow, interface.Ui_MainWindow):
     def __init__(self):
         QtGui.QMainWindow.__init__(self)
         self.setupUi(self)
+        self.popup = None
+        self.update_devices_list()
         # Test buttons
         self.DebugButton.clicked.connect(self.debug)
         self.ErrorButton.clicked.connect(self.error)
@@ -82,6 +86,14 @@ class MainWindow(QtGui.QMainWindow, interface.Ui_MainWindow):
         self.InfoCheck.clicked.connect(self.update_logger_level)
         self.WarnCheck.clicked.connect(self.update_logger_level)
         self.ErrorCheck.clicked.connect(self.update_logger_level)
+        # Status labels initial configuration
+        self.StatusLabel_1.setVisible(False)
+        self.StatusLabel_2.setVisible(False)
+        self.StatusLabel_2.setText("<font color='green'>connected</font>")
+        # Device manager buttons
+        self.LoadDeviceButton.clicked.connect(self.load_device)
+        self.RemoveDeviceButton.clicked.connect(self.remove_device)
+        self.NewDeviceButton.clicked.connect(self.new_device)
         # Configure the logger, assigning an instance of AppLogHandler.
         self.log_handler = AppLogHandler(self.LoggerBrowser)
         # log_handler.setFormatter(logging.Formatter("%(levelname)s: %(message)s"))
@@ -89,12 +101,51 @@ class MainWindow(QtGui.QMainWindow, interface.Ui_MainWindow):
         logger.info("Initialized the Frequency-Metter Application")
 
     def update_logger_level(self):
-        """Evaluate the checkboxes states and update logger level."""
+        """Evaluate the check boxes states and update logger level."""
         self.log_handler.enabled[logging.DEBUG] = self.DebugCheck.isChecked()
         self.log_handler.enabled[logging.INFO] = self.InfoCheck.isChecked()
         self.log_handler.enabled[logging.WARN] = self.WarnCheck.isChecked()
         self.log_handler.enabled[logging.ERROR] = self.ErrorCheck.isChecked()
         return
+
+    def load_device(self):
+        device_name = self.DeviceComboBox.currentText()
+        if device_name == "<None>":
+            logger.warn("No device selected")
+        else:
+            # self.DeviceProperties
+            logger.info("Loaded the device {dev}".format(dev=device_name))
+            self.StatusLabel_1.setVisible(True)
+            self.StatusLabel_2.setVisible(True)
+            self.StatusLabel_2.setText("<font color='red'>disconnected</font>")
+            self.DeviceComboBox.setCurrentIndex(0)
+            self.LoadDeviceButton.setEnabled(False)
+            self.RemoveDeviceButton.setEnabled(True)
+        return
+
+    def remove_device(self):
+        logger.info("Device removed")
+        self.StatusLabel_1.setVisible(False)
+        self.StatusLabel_2.setVisible(False)
+        self.LoadDeviceButton.setEnabled(True)
+        self.RemoveDeviceButton.setEnabled(False)
+        return
+
+    def new_device(self):
+        logger.debug("Opening Device Manager pop-up window")
+        self.popup = device_manager.DevManagerWindow()
+        self.popup.exec_()
+        self.update_devices_list()
+        return
+
+    def update_devices_list(self):
+        devices_list = [os.path.basename(match)[:-4] for match in
+                        glob.glob('resources/devices/*yml')]
+        self.DeviceComboBox.clear()
+        self.DeviceComboBox.addItem('<None>')
+        self.DeviceComboBox.addItems(devices_list)
+        logger.info("Updated devices list")
+        return        
 
     def debug(self):
         logger.debug("Pressed debug button")
