@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>Frequency-meter application</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout_2">
@@ -162,100 +162,10 @@
       <item row="0" column="0" colspan="4">
        <widget class="QGroupBox" name="groupBox_2">
         <property name="title">
-         <string>Device manager:</string>
+         <string>Devices:</string>
         </property>
         <layout class="QGridLayout" name="gridLayout_6">
-         <item row="1" column="4">
-          <widget class="QComboBox" name="DeviceComboBox">
-           <item>
-            <property name="text">
-             <string>&lt;None&gt;</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>DE1_SoC</string>
-            </property>
-           </item>
-          </widget>
-         </item>
-         <item row="1" column="5">
-          <widget class="QPushButton" name="LoadDeviceButton">
-           <property name="text">
-            <string>Load device</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="7">
-          <spacer name="horizontalSpacer_3">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>40</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-         <item row="1" column="8">
-          <widget class="QPushButton" name="NewDeviceButton">
-           <property name="text">
-            <string>New Device</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="2">
-          <spacer name="horizontalSpacer_5">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>40</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-         <item row="1" column="6">
-          <widget class="QPushButton" name="RemoveDeviceButton">
-           <property name="enabled">
-            <bool>false</bool>
-           </property>
-           <property name="text">
-            <string>Remove device</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="0" colspan="2">
-          <spacer name="horizontalSpacer_4">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>40</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-         <item row="3" column="5">
-          <spacer name="horizontalSpacer_6">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>40</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-         <item row="3" column="6" colspan="3">
+         <item row="3" column="4" colspan="3">
           <widget class="QGroupBox" name="groupBox_4">
            <property name="title">
             <string>Device 2</string>
@@ -272,7 +182,7 @@
              </widget>
             </item>
             <item row="1" column="0">
-             <widget class="QLabel" name="label_4">
+             <widget class="QLabel" name="Status2Label_1">
               <property name="text">
                <string>Status:</string>
               </property>
@@ -282,30 +192,47 @@
              </widget>
             </item>
             <item row="0" column="1">
-             <widget class="QLabel" name="label_5">
+             <widget class="QLabel" name="Device2NameLabel">
               <property name="text">
                <string/>
               </property>
              </widget>
             </item>
             <item row="1" column="1">
-             <widget class="QLabel" name="label_6">
+             <widget class="QLabel" name="Status2Label_2">
               <property name="text">
                <string>connected</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="2">
+             <widget class="QPushButton" name="RemoveDevice2Button">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+              <property name="text">
+               <string>Remove device</string>
               </property>
              </widget>
             </item>
            </layout>
           </widget>
          </item>
-         <item row="3" column="0" colspan="5">
+         <item row="1" column="6">
+          <widget class="QPushButton" name="DeviceMngButton">
+           <property name="text">
+            <string>Device Manager</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="0" colspan="3">
           <widget class="QGroupBox" name="groupBox_3">
            <property name="title">
             <string>Device 1</string>
            </property>
            <layout class="QGridLayout" name="gridLayout_4">
             <item row="1" column="2">
-             <widget class="QLabel" name="StatusLabel_2">
+             <widget class="QLabel" name="Status1Label_2">
               <property name="text">
                <string>connected</string>
               </property>
@@ -322,14 +249,14 @@
              </widget>
             </item>
             <item row="0" column="2">
-             <widget class="QLabel" name="label_2">
+             <widget class="QLabel" name="Device1NameLabel">
               <property name="text">
                <string/>
               </property>
              </widget>
             </item>
             <item row="1" column="1">
-             <widget class="QLabel" name="StatusLabel_1">
+             <widget class="QLabel" name="Status1Label_1">
               <property name="enabled">
                <bool>true</bool>
               </property>
@@ -341,13 +268,64 @@
               </property>
              </widget>
             </item>
+            <item row="0" column="3">
+             <widget class="QPushButton" name="RemoveDevice1Button">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+              <property name="text">
+               <string>Remove device</string>
+              </property>
+             </widget>
+            </item>
            </layout>
           </widget>
          </item>
-         <item row="2" column="0" colspan="9">
+         <item row="2" column="0" colspan="7">
           <widget class="Line" name="line">
            <property name="orientation">
             <enum>Qt::Horizontal</enum>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QPushButton" name="LoadDeviceButton">
+           <property name="text">
+            <string>Load device</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QComboBox" name="DeviceComboBox">
+           <item>
+            <property name="text">
+             <string>&lt;None&gt;</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>DE1_SoC</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+         <item row="1" column="2" colspan="4">
+          <spacer name="horizontalSpacer_3">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item row="3" column="3">
+          <widget class="Line" name="line_2">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
            </property>
           </widget>
          </item>
@@ -374,18 +352,6 @@
     </property>
     <addaction name="actionExit"/>
    </widget>
-   <widget class="QMenu" name="menuEdit">
-    <property name="title">
-     <string>Edit</string>
-    </property>
-   </widget>
-   <widget class="QMenu" name="menuView">
-    <property name="title">
-     <string>View</string>
-    </property>
-    <addaction name="actionLog_console"/>
-    <addaction name="actionDevice_manager"/>
-   </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
      <string>Help</string>
@@ -403,11 +369,8 @@
      <string>Tools</string>
     </property>
     <addaction name="actionDevice_Manager"/>
-    <addaction name="separator"/>
    </widget>
    <addaction name="menuFile"/>
-   <addaction name="menuEdit"/>
-   <addaction name="menuView"/>
    <addaction name="menuTools"/>
    <addaction name="menuPlugins"/>
    <addaction name="menuHelp"/>
@@ -415,11 +378,6 @@
   <action name="actionFile">
    <property name="text">
     <string>File</string>
-   </property>
-  </action>
-  <action name="actionEdit">
-   <property name="text">
-    <string>Edit</string>
    </property>
   </action>
   <action name="actionSave">
@@ -468,7 +426,12 @@
   </action>
   <action name="actionDevice_Manager">
    <property name="text">
-    <string>New device ...</string>
+    <string>Device manager ...</string>
+   </property>
+  </action>
+  <action name="actionEdit">
+   <property name="text">
+    <string>Edit</string>
    </property>
   </action>
  </widget>
