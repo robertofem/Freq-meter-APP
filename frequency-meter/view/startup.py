@@ -95,9 +95,12 @@ class MainWindow(QtGui.QMainWindow, interface.Ui_MainWindow):
         self.Status2Label_2.setText("<font color='green'>connected</font>")
         # Device manager buttons
         self.LoadDeviceButton.clicked.connect(self.load_device)
+        self.DeviceMngButton.clicked.connect(self.new_device)
+        # Devices buttons
         self.RemoveDevice1Button.clicked.connect(self.remove_device1)
         self.RemoveDevice2Button.clicked.connect(self.remove_device2)
-        self.DeviceMngButton.clicked.connect(self.new_device)
+        self.connectButton_1.clicked.connect(self.connect_device1)
+        self.connectButton_2.clicked.connect(self.connect_device2)
         # Configure the logger, assigning an instance of AppLogHandler.
         self.log_handler = AppLogHandler(self.LoggerBrowser)
         # log_handler.setFormatter(logging.Formatter("%(levelname)s: %(message)s"))
@@ -116,6 +119,9 @@ class MainWindow(QtGui.QMainWindow, interface.Ui_MainWindow):
         device_name = self.DeviceComboBox.currentText()
         if device_name == "<None>":
             logger.warn("No device selected")
+        elif device_name in (self.Device1NameLabel.text(),
+                             self.Device2NameLabel.text()):
+            logger.warn("Selected device is already loaded")
         else:
             if not self.RemoveDevice1Button.isEnabled():
                 logger.info("Loaded the device {dev}".format(dev=device_name))
@@ -131,6 +137,7 @@ class MainWindow(QtGui.QMainWindow, interface.Ui_MainWindow):
                     self.LoadDeviceButton.setEnabled(False)
                     self.DeviceComboBox.setEnabled(False)
                 self.RemoveDevice1Button.setEnabled(True)
+                self.connectButton_1.setEnabled(True)
             elif not self.RemoveDevice2Button.isEnabled():
                 logger.info("Loaded the device {dev}".format(dev=device_name))
                 self.Status2Label_1.setVisible(True)
@@ -142,28 +149,41 @@ class MainWindow(QtGui.QMainWindow, interface.Ui_MainWindow):
                 self.LoadDeviceButton.setEnabled(False)
                 self.DeviceComboBox.setEnabled(False)
                 self.RemoveDevice2Button.setEnabled(True)
+                self.connectButton_2.setEnabled(True)
             else:
                 logger.warn("There are 2 devices already loaded!")
         return
 
     def remove_device1(self):
-        logger.info("Device removed")
+        logger.info("Device 1 removed")
         self.Status1Label_1.setVisible(False)
         self.Status1Label_2.setVisible(False)
         self.Device1NameLabel.setText("")
         self.LoadDeviceButton.setEnabled(True)
         self.DeviceComboBox.setEnabled(True)
         self.RemoveDevice1Button.setEnabled(False)
+        self.connectButton_1.setEnabled(False)
         return
 
     def remove_device2(self):
-        logger.info("Device removed")
+        logger.info("Device 2 removed")
         self.Status2Label_1.setVisible(False)
         self.Status2Label_2.setVisible(False)
         self.Device2NameLabel.setText("")
         self.LoadDeviceButton.setEnabled(True)
         self.DeviceComboBox.setEnabled(True)
         self.RemoveDevice2Button.setEnabled(False)
+        self.connectButton_2.setEnabled(False)
+        return
+
+    def connect_device1(self):
+        self.Status1Label_2.setText("<font color='green'>connected</font>")
+        logger.info("Device 1 connected")
+        return
+
+    def connect_device2(self):
+        self.Status2Label_2.setText("<font color='green'>connected</font>")
+        logger.info("Device 2 connected")
         return
 
     def new_device(self):
