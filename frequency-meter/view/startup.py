@@ -9,6 +9,7 @@ import sys
 from PyQt4 import QtGui, QtCore
 # Local libraries
 from view import device_manager
+from view import freqmeterdevice
 from view import interface
 
 
@@ -101,9 +102,10 @@ class MainWindow(QtGui.QMainWindow, interface.Ui_MainWindow):
         self.RemoveDevice2Button.clicked.connect(self.remove_device2)
         self.connectButton_1.clicked.connect(self.connect_device1)
         self.connectButton_2.clicked.connect(self.connect_device2)
+        # Instrument devices list.
+        self.devices = [None, None]
         # Configure the logger, assigning an instance of AppLogHandler.
         self.log_handler = AppLogHandler(self.LoggerBrowser)
-        # log_handler.setFormatter(logging.Formatter("%(levelname)s: %(message)s"))
         logger.addHandler(self.log_handler)
         logger.info("Initialized the Frequency-Metter Application")
 
@@ -123,7 +125,8 @@ class MainWindow(QtGui.QMainWindow, interface.Ui_MainWindow):
                              self.Device2NameLabel.text()):
             logger.warn("Selected device is already loaded")
         else:
-            if not self.RemoveDevice1Button.isEnabled():
+            if self.devices[0] is None:
+                self.devices[0] = freqmeterdevice.FreqMeterDevice(device_name)
                 logger.info("Loaded the device {dev}".format(dev=device_name))
                 self.Status1Label_1.setVisible(True)
                 self.Status1Label_2.setVisible(True)
@@ -138,7 +141,8 @@ class MainWindow(QtGui.QMainWindow, interface.Ui_MainWindow):
                     self.DeviceComboBox.setEnabled(False)
                 self.RemoveDevice1Button.setEnabled(True)
                 self.connectButton_1.setEnabled(True)
-            elif not self.RemoveDevice2Button.isEnabled():
+            elif self.devices[1] is None:
+                self.devices[1] = freqmeterdevice.FreqMeterDevice(device_name)
                 logger.info("Loaded the device {dev}".format(dev=device_name))
                 self.Status2Label_1.setVisible(True)
                 self.Status2Label_2.setVisible(True)
@@ -155,6 +159,8 @@ class MainWindow(QtGui.QMainWindow, interface.Ui_MainWindow):
         return
 
     def remove_device1(self):
+        # TODO disconnect device before removing it
+        self.devices[0] = None
         logger.info("Device 1 removed")
         self.Status1Label_1.setVisible(False)
         self.Status1Label_2.setVisible(False)
@@ -166,6 +172,8 @@ class MainWindow(QtGui.QMainWindow, interface.Ui_MainWindow):
         return
 
     def remove_device2(self):
+        # TODO disconnect device before removing it
+        self.devices[1] = None
         logger.info("Device 2 removed")
         self.Status2Label_1.setVisible(False)
         self.Status2Label_2.setVisible(False)
@@ -177,6 +185,7 @@ class MainWindow(QtGui.QMainWindow, interface.Ui_MainWindow):
         return
 
     def connect_device1(self):
+        self.devices[0].connect(logger)
         self.Status1Label_2.setText("<font color='green'>connected</font>")
         logger.info("Device 1 connected")
         return
