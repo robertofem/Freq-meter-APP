@@ -8,13 +8,15 @@ import matplotlib.pyplot as plt
 import logging
 import os
 import sys
+import yaml
 # Third party libraries
 from PyQt4 import QtGui, QtCore
 # Local libraries
 from view import device_manager
 from view import freqmeterdevice
 from view import interface
-
+# Test library
+import random
 
 # Create the application logger, with a previously defined configuration.
 logger = logging.getLogger('view')
@@ -87,9 +89,9 @@ class MainWindow(QtGui.QMainWindow, interface.Ui_MainWindow):
         logger.addHandler(self.log_handler)
         logger.info("Initialized the Frequency-Metter Application")
         # Test buttons
-        self.DebugButton.clicked.connect(self.debug)
-        self.ErrorButton.clicked.connect(self.error)
-        self.WarnButton.clicked.connect(self.warn)
+        self.StartButton.clicked.connect(self.start_plot)
+        self.StopButton.clicked.connect(self.stop_plot)
+        self.ClearButton.clicked.connect(self.clear_plot)
         # Log console level selection buttons
         self.DebugCheck.clicked.connect(self.update_logger_level)
         self.InfoCheck.clicked.connect(self.update_logger_level)
@@ -100,6 +102,13 @@ class MainWindow(QtGui.QMainWindow, interface.Ui_MainWindow):
         self.Status1Label_2.setVisible(False)
         self.Status2Label_1.setVisible(False)
         self.Status2Label_2.setVisible(False)
+        self.devnamelabel_1.setVisible(False)
+        self.devnamelabel_2.setVisible(False)
+        # Measurements channels labels initial configuration
+        self.dev1_scrollarea.setVisible(False)
+        self.dev2_scrollarea.setVisible(False)
+        self.dev1label.setVisible(False)
+        self.dev2label.setVisible(False)
         # Device manager buttons
         self.LoadDeviceButton.clicked.connect(self.load_device)
         self.DeviceMngButton.clicked.connect(self.new_device)
@@ -110,6 +119,9 @@ class MainWindow(QtGui.QMainWindow, interface.Ui_MainWindow):
         self.connectButton_2.clicked.connect(self.connect_device2)
         # Instrument devices list.
         self.devices = [None, None]
+        # Qt timer set-up for updating the plots.
+        self.timer = QtCore.QTimer()
+        self.timer.timeout.connect(self.update_plots)
         # plot layout set-up.
         self.figure = plt.figure()
         self.figure.patch.set_alpha(0)
@@ -117,6 +129,11 @@ class MainWindow(QtGui.QMainWindow, interface.Ui_MainWindow):
         self.toolbar = NavTbar(self.canvas, self)
         self.plotVLayout.addWidget(self.toolbar)
         self.plotVLayout.addWidget(self.canvas)
+        self.ax = self.figure.add_subplot(111)
+        self.figure.subplots_adjust(top=0.9, bottom=0.13, left=0.1)
+        self.ax.grid()
+        # Plot data
+        self.data = {'1': [], '2': []}
 
     def update_logger_level(self):
         """Evaluate the check boxes states and update logger level."""
@@ -148,8 +165,15 @@ class MainWindow(QtGui.QMainWindow, interface.Ui_MainWindow):
                 self.devices[0] = freqmeterdevice.FreqMeterDevice(dev_path,
                                                                   logger)
                 logger.info("Loaded the device {dev}".format(dev=device_name))
+                # Measurement area items set-up
+                self.dev1_scrollarea.setVisible(True)
+                self.dev1label.setVisible(True)
+                self.dev1label.setText(device_name)
+                # measurement_items_setup()
+                # Devices manager area items set-up
                 self.Status1Label_1.setVisible(True)
                 self.Status1Label_2.setVisible(True)
+                self.devnamelabel_1.setVisible(True)
                 self.Status1Label_2.setText("<font color='red'>not connected"
                                            "</font>")
                 self.Device1NameLabel.setText(self.DeviceComboBox.currentText())
@@ -162,11 +186,16 @@ class MainWindow(QtGui.QMainWindow, interface.Ui_MainWindow):
                 self.RemoveDevice1Button.setEnabled(True)
                 self.connectButton_1.setEnabled(True)
             elif self.devices[1] is None:
-                self.devices[1] = freqmeterdevice.FreqMeterDevice(device_name,
+                self.devices[1] = freqmeterdevice.FreqMeterDevice(dev_path,
                                                                   logger)
                 logger.info("Loaded the device {dev}".format(dev=device_name))
+                # Measurement area items set-up
+                self.dev2_scrollarea.setVisible(True)
+                self.dev2label.setVisible(True)
+                self.dev2label.setText(device_name)
                 self.Status2Label_1.setVisible(True)
                 self.Status2Label_2.setVisible(True)
+                self.devnamelabel_2.setVisible(True)
                 self.Status2Label_2.setText("<font color='red'>not connected"
                                            "</font>")
                 self.Device2NameLabel.setText(self.DeviceComboBox.currentText())
@@ -185,11 +214,15 @@ class MainWindow(QtGui.QMainWindow, interface.Ui_MainWindow):
         logger.info("Device 1 removed")
         self.Status1Label_1.setVisible(False)
         self.Status1Label_2.setVisible(False)
+        self.devnamelabel_1.setVisible(False)
         self.Device1NameLabel.setText("")
         self.LoadDeviceButton.setEnabled(True)
         self.DeviceComboBox.setEnabled(True)
         self.RemoveDevice1Button.setEnabled(False)
         self.connectButton_1.setEnabled(False)
+        # Measurement area items set-up
+        self.dev1_scrollarea.setVisible(False)
+        self.dev1label.setVisible(False)
         return
 
     def remove_device2(self):
@@ -198,11 +231,15 @@ class MainWindow(QtGui.QMainWindow, interface.Ui_MainWindow):
         logger.info("Device 2 removed")
         self.Status2Label_1.setVisible(False)
         self.Status2Label_2.setVisible(False)
+        self.devnamelabel_2.setVisible(False)
         self.Device2NameLabel.setText("")
         self.LoadDeviceButton.setEnabled(True)
         self.DeviceComboBox.setEnabled(True)
         self.RemoveDevice2Button.setEnabled(False)
         self.connectButton_2.setEnabled(False)
+        # Measurement area items set-up
+        self.dev1_scrollarea.setVisible(False)
+        self.dev1label.setVisible(False)
         return
 
     def connect_device1(self):
@@ -239,29 +276,52 @@ class MainWindow(QtGui.QMainWindow, interface.Ui_MainWindow):
         logger.info("Updated devices list")
         return        
 
-    def debug(self):
+    def update_plots(self):
         # Sample values for X and Y axis
-        x=range(0, 10)
-        y=range(0, 20, 2)
+        # for i in range(10):
+        self.data['1'].append(random.gauss(10, 0.5))
+        self.data['2'].append(random.gauss(10, 0.1))
         # Discard old graph
-        self.figure.clf(keep_observers=True)
+        self.ax.cla()
         # Draw the plot
-        ax = self.figure.add_subplot(111)
-        ax.plot(x, y, '*-')
-        self.figure.subplots_adjust(top=1, bottom=0.13, left=0.05)
+        self.ax.grid()
+        self.ax.plot(self.data['1'], 'r-')
+        self.ax.plot(self.data['2'], 'b-')
+        # Set the visible area
+        if self.scrollcheckBox.isChecked():
+            if len(self.data['1']) > 100:
+                self.ax.set_xlim(len(self.data['1']) - 100, len(self.data['1']))
         # Refresh canvas
         self.canvas.draw()
         logger.debug("Plot debugging")
         return
 
-    def error(self):
-        logger.error("Pressed error button")
+    def start_plot(self):
+        # Sample values for X and Y axis
+        self.timer.start(1000)
+        logger.debug("Start plotting")
         return
 
-    def warn(self):
-        logger.warn("Pressed error button")
+    def stop_plot(self):
+        self.timer.stop()
+        logger.debug("Pressed stop button")
         return
 
+    def clear_plot(self):
+        logger.debug("Pressed clear button")
+        return
+
+
+def measurement_items_setup(conf_file, dev=1):
+    """
+    Reads the info from a conf_file and prepares the scroll area items.
+    """
+    # with open(conf_file, 'r') as read_file:
+    #         dev_data = yaml.load(read_file)
+    # channels = int(dev_data['chanels']['Quantity'])
+    # for channel in range(1, channels+1):
+    #     pass
+    return
 
 def run():
     # The QApplication object manages the application control flow and settings.

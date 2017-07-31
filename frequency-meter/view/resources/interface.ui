@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>905</width>
-    <height>700</height>
+    <width>984</width>
+    <height>874</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -27,43 +27,9 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout_2">
-    <item row="0" column="0">
+    <item row="0" column="1">
      <layout class="QGridLayout" name="gridLayout">
-      <item row="2" column="0">
-       <spacer name="verticalSpacer">
-        <property name="orientation">
-         <enum>Qt::Vertical</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>20</width>
-          <height>40</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
-      <item row="1" column="0">
-       <widget class="QPushButton" name="DebugButton">
-        <property name="text">
-         <string>Debug</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="2">
-       <widget class="QPushButton" name="ErrorButton">
-        <property name="text">
-         <string>ERROR</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QPushButton" name="WarnButton">
-        <property name="text">
-         <string>Warning</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="0" colspan="4">
+      <item row="4" column="0" colspan="4">
        <widget class="QGroupBox" name="groupBox">
         <property name="enabled">
          <bool>true</bool>
@@ -171,7 +137,7 @@
            </property>
            <layout class="QGridLayout" name="gridLayout_5">
             <item row="0" column="0">
-             <widget class="QLabel" name="label_3">
+             <widget class="QLabel" name="devnamelabel_2">
               <property name="text">
                <string>Name:</string>
               </property>
@@ -248,7 +214,7 @@
              </widget>
             </item>
             <item row="0" column="1">
-             <widget class="QLabel" name="label">
+             <widget class="QLabel" name="devnamelabel_1">
               <property name="text">
                <string>Name:</string>
               </property>
@@ -351,8 +317,421 @@
         </layout>
        </widget>
       </item>
-      <item row="1" column="3" rowspan="2">
-       <layout class="QVBoxLayout" name="plotVLayout"/>
+      <item row="1" column="0" rowspan="3" colspan="4">
+       <widget class="QGroupBox" name="groupBox_5">
+        <property name="title">
+         <string>Measurements</string>
+        </property>
+        <layout class="QGridLayout" name="gridLayout_7">
+         <item row="4" column="4">
+          <widget class="QCheckBox" name="scrollcheckBox">
+           <property name="text">
+            <string>Autoscroll</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QPushButton" name="StopButton">
+           <property name="text">
+            <string>Stop</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="0">
+          <widget class="QPushButton" name="StartButton">
+           <property name="text">
+            <string>Start</string>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="5">
+          <widget class="QPushButton" name="ClearButton">
+           <property name="text">
+            <string>Clear</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="dev1label">
+           <property name="text">
+            <string>Device 1</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QLabel" name="dev2label">
+           <property name="text">
+            <string>Device 2</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1" rowspan="3">
+          <widget class="QScrollArea" name="dev2_scrollarea">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Maximum" vsizetype="Expanding">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="widgetResizable">
+            <bool>true</bool>
+           </property>
+           <widget class="QWidget" name="scrollAreaWidgetContents_2">
+            <property name="geometry">
+             <rect>
+              <x>0</x>
+              <y>0</y>
+              <width>170</width>
+              <height>380</height>
+             </rect>
+            </property>
+            <layout class="QVBoxLayout" name="verticalLayout_2">
+             <item>
+              <widget class="QGroupBox" name="Dev2_Ch1">
+               <property name="title">
+                <string>Ch 1</string>
+               </property>
+               <layout class="QGridLayout" name="gridLayout_15">
+                <item row="0" column="0">
+                 <widget class="QCheckBox" name="Dev2_Ch1_S1">
+                  <property name="text">
+                   <string>Fine</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="1">
+                 <widget class="QCheckBox" name="Dev2_Ch1_S2">
+                  <property name="text">
+                   <string>Fine</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="0">
+                 <widget class="QCheckBox" name="Dev2_Ch1_S3">
+                  <property name="text">
+                   <string>Fine</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="1">
+                 <widget class="QCheckBox" name="Dev2_Ch1_S4">
+                  <property name="text">
+                   <string>Fine</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
+             <item>
+              <widget class="QGroupBox" name="Dev2_Ch2">
+               <property name="title">
+                <string>Ch 2</string>
+               </property>
+               <layout class="QGridLayout" name="gridLayout_16">
+                <item row="0" column="0">
+                 <widget class="QCheckBox" name="Dev2_Ch2_S1">
+                  <property name="text">
+                   <string>Fine</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="1">
+                 <widget class="QCheckBox" name="Dev2_Ch2_S2">
+                  <property name="text">
+                   <string>Fine</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="0">
+                 <widget class="QCheckBox" name="Dev2_Ch2_S3">
+                  <property name="text">
+                   <string>Fine</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="1">
+                 <widget class="QCheckBox" name="Dev2_Ch2_S4">
+                  <property name="text">
+                   <string>Fine</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
+             <item>
+              <widget class="QGroupBox" name="Dev2_Ch3">
+               <property name="title">
+                <string>Ch 3</string>
+               </property>
+               <layout class="QGridLayout" name="gridLayout_17">
+                <item row="0" column="0">
+                 <widget class="QCheckBox" name="Dev2_Ch3_S1">
+                  <property name="text">
+                   <string>Fine</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="0">
+                 <widget class="QCheckBox" name="Dev2_Ch3_S3">
+                  <property name="text">
+                   <string>Fine</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="1">
+                 <widget class="QCheckBox" name="Dev2_Ch3_S4">
+                  <property name="text">
+                   <string>Fine</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="1">
+                 <widget class="QCheckBox" name="Dev2_Ch3_S2">
+                  <property name="text">
+                   <string>Fine</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
+             <item>
+              <widget class="QGroupBox" name="Dev2_Ch4">
+               <property name="title">
+                <string>Ch 4</string>
+               </property>
+               <layout class="QGridLayout" name="gridLayout_14">
+                <item row="0" column="0">
+                 <widget class="QCheckBox" name="Dev2_Ch4_S1">
+                  <property name="text">
+                   <string>Fine</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="1">
+                 <widget class="QCheckBox" name="Dev2_Ch4_S2">
+                  <property name="text">
+                   <string>Fine</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="0">
+                 <widget class="QCheckBox" name="Dev2_Ch4_S3">
+                  <property name="text">
+                   <string>Fine</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="1">
+                 <widget class="QCheckBox" name="Dev2_Ch4_S4">
+                  <property name="text">
+                   <string>Fine</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </widget>
+         </item>
+         <item row="2" column="0" rowspan="3">
+          <widget class="QScrollArea" name="dev1_scrollarea">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Maximum" vsizetype="Expanding">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="widgetResizable">
+            <bool>true</bool>
+           </property>
+           <widget class="QWidget" name="scrollAreaWidgetContents">
+            <property name="geometry">
+             <rect>
+              <x>0</x>
+              <y>0</y>
+              <width>170</width>
+              <height>380</height>
+             </rect>
+            </property>
+            <layout class="QVBoxLayout" name="verticalLayout">
+             <item>
+              <widget class="QGroupBox" name="Dev1_Ch1">
+               <property name="title">
+                <string>Ch 1</string>
+               </property>
+               <layout class="QGridLayout" name="gridLayout_18">
+                <item row="0" column="0">
+                 <widget class="QCheckBox" name="Dev1_Ch1_S1">
+                  <property name="text">
+                   <string>Fine</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="1">
+                 <widget class="QCheckBox" name="Dev1_Ch1_S2">
+                  <property name="text">
+                   <string>Fine</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="0">
+                 <widget class="QCheckBox" name="Dev1_Ch1_S3">
+                  <property name="text">
+                   <string>Fine</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="1">
+                 <widget class="QCheckBox" name="Dev1_Ch1_S4">
+                  <property name="text">
+                   <string>Fine</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
+             <item>
+              <widget class="QGroupBox" name="Dev1_Ch2">
+               <property name="title">
+                <string>Ch 2</string>
+               </property>
+               <layout class="QGridLayout" name="gridLayout_19">
+                <item row="0" column="0">
+                 <widget class="QCheckBox" name="Dev1_Ch2_S1">
+                  <property name="text">
+                   <string>Fine</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="1">
+                 <widget class="QCheckBox" name="Dev1_Ch2_S2">
+                  <property name="text">
+                   <string>Fine</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="0">
+                 <widget class="QCheckBox" name="Dev1_Ch2_S3">
+                  <property name="text">
+                   <string>Fine</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="1">
+                 <widget class="QCheckBox" name="Dev1_Ch2_S4">
+                  <property name="text">
+                   <string>Fine</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
+             <item>
+              <widget class="QGroupBox" name="Dev1_Ch3">
+               <property name="title">
+                <string>Ch 3</string>
+               </property>
+               <layout class="QGridLayout" name="gridLayout_20">
+                <item row="0" column="0">
+                 <widget class="QCheckBox" name="Dev1_Ch3_S1">
+                  <property name="text">
+                   <string>Fine</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="1">
+                 <widget class="QCheckBox" name="Dev1_Ch3_S2">
+                  <property name="text">
+                   <string>Fine</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="0">
+                 <widget class="QCheckBox" name="Dev1_Ch3_S3">
+                  <property name="text">
+                   <string>Fine</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="1">
+                 <widget class="QCheckBox" name="Dev1_Ch3_S4">
+                  <property name="text">
+                   <string>Fine</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
+             <item>
+              <widget class="QGroupBox" name="Dev1_Ch4">
+               <property name="title">
+                <string>Ch 4</string>
+               </property>
+               <layout class="QGridLayout" name="gridLayout_21">
+                <item row="0" column="0">
+                 <widget class="QCheckBox" name="Dev1_Ch4_S1">
+                  <property name="text">
+                   <string>Fine</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="1">
+                 <widget class="QCheckBox" name="Dev1_Ch4_S2">
+                  <property name="text">
+                   <string>Fine</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="0">
+                 <widget class="QCheckBox" name="Dev1_Ch4_S3">
+                  <property name="text">
+                   <string>Fine</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="1">
+                 <widget class="QCheckBox" name="Dev1_Ch4_S4">
+                  <property name="text">
+                   <string>Fine</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </widget>
+         </item>
+         <item row="4" column="2">
+          <spacer name="horizontalSpacer">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item row="0" column="2" rowspan="4" colspan="4">
+          <layout class="QVBoxLayout" name="plotVLayout"/>
+         </item>
+        </layout>
+       </widget>
       </item>
      </layout>
     </item>
@@ -364,7 +743,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>905</width>
+     <width>984</width>
      <height>25</height>
     </rect>
    </property>
