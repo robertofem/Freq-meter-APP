@@ -2,6 +2,9 @@
 """Application main executable, for initializing the whole program"""
 # Standard libraries
 import glob
+from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT as NavTbar
+import matplotlib.pyplot as plt
 import logging
 import os
 import sys
@@ -75,9 +78,14 @@ class MainWindow(QtGui.QMainWindow, interface.Ui_MainWindow):
     """
     def __init__(self):
         QtGui.QMainWindow.__init__(self)
+        # Run the windows initialization routines.
         self.setupUi(self)
         self.popup = None
         self.update_devices_list()
+        # Configure the logger, assigning an instance of AppLogHandler.
+        self.log_handler = AppLogHandler(self.LoggerBrowser)
+        logger.addHandler(self.log_handler)
+        logger.info("Initialized the Frequency-Metter Application")
         # Test buttons
         self.DebugButton.clicked.connect(self.debug)
         self.ErrorButton.clicked.connect(self.error)
@@ -90,10 +98,8 @@ class MainWindow(QtGui.QMainWindow, interface.Ui_MainWindow):
         # Status labels initial configuration
         self.Status1Label_1.setVisible(False)
         self.Status1Label_2.setVisible(False)
-        self.Status1Label_2.setText("<font color='green'>connected</font>")
         self.Status2Label_1.setVisible(False)
         self.Status2Label_2.setVisible(False)
-        self.Status2Label_2.setText("<font color='green'>connected</font>")
         # Device manager buttons
         self.LoadDeviceButton.clicked.connect(self.load_device)
         self.DeviceMngButton.clicked.connect(self.new_device)
@@ -104,10 +110,13 @@ class MainWindow(QtGui.QMainWindow, interface.Ui_MainWindow):
         self.connectButton_2.clicked.connect(self.connect_device2)
         # Instrument devices list.
         self.devices = [None, None]
-        # Configure the logger, assigning an instance of AppLogHandler.
-        self.log_handler = AppLogHandler(self.LoggerBrowser)
-        logger.addHandler(self.log_handler)
-        logger.info("Initialized the Frequency-Metter Application")
+        # plot layout set-up.
+        self.figure = plt.figure()
+        self.figure.patch.set_alpha(0)
+        self.canvas = FigureCanvas(self.figure)
+        self.toolbar = NavTbar(self.canvas, self)
+        self.plotVLayout.addWidget(self.toolbar)
+        self.plotVLayout.addWidget(self.canvas)
 
     def update_logger_level(self):
         """Evaluate the check boxes states and update logger level."""
@@ -118,6 +127,9 @@ class MainWindow(QtGui.QMainWindow, interface.Ui_MainWindow):
         return
 
     def load_device(self):
+        """
+        Load the selected device to the first available slot.
+        """
         device_name = self.DeviceComboBox.currentText()
         if device_name == "<None>":
             logger.warn("No device selected")
@@ -125,12 +137,20 @@ class MainWindow(QtGui.QMainWindow, interface.Ui_MainWindow):
                              self.Device2NameLabel.text()):
             logger.warn("Selected device is already loaded")
         else:
+            # Deal with the situation where the conf file is deleted since 
+            # the last time the list was refreshed.
+            dev_dir = "{}/resources/devices/".format(os.getcwd())
+            dev_path = "{dir}{dev}.yml".format(dir=dev_dir, dev=device_name)
+            if not glob.glob(dev_path):
+                logger.warn("Selected device does not longer exist")
+                return
             if self.devices[0] is None:
-                self.devices[0] = freqmeterdevice.FreqMeterDevice(device_name)
+                self.devices[0] = freqmeterdevice.FreqMeterDevice(dev_path,
+                                                                  logger)
                 logger.info("Loaded the device {dev}".format(dev=device_name))
                 self.Status1Label_1.setVisible(True)
                 self.Status1Label_2.setVisible(True)
-                self.Status1Label_2.setText("<font color='red'>disconnected"
+                self.Status1Label_2.setText("<font color='red'>not connected"
                                            "</font>")
                 self.Device1NameLabel.setText(self.DeviceComboBox.currentText())
                 self.DeviceComboBox.setCurrentIndex(0)
@@ -142,11 +162,12 @@ class MainWindow(QtGui.QMainWindow, interface.Ui_MainWindow):
                 self.RemoveDevice1Button.setEnabled(True)
                 self.connectButton_1.setEnabled(True)
             elif self.devices[1] is None:
-                self.devices[1] = freqmeterdevice.FreqMeterDevice(device_name)
+                self.devices[1] = freqmeterdevice.FreqMeterDevice(device_name,
+                                                                  logger)
                 logger.info("Loaded the device {dev}".format(dev=device_name))
                 self.Status2Label_1.setVisible(True)
                 self.Status2Label_2.setVisible(True)
-                self.Status2Label_2.setText("<font color='red'>disconnected"
+                self.Status2Label_2.setText("<font color='red'>not connected"
                                            "</font>")
                 self.Device2NameLabel.setText(self.DeviceComboBox.currentText())
                 self.DeviceComboBox.setCurrentIndex(0)
@@ -159,7 +180,7 @@ class MainWindow(QtGui.QMainWindow, interface.Ui_MainWindow):
         return
 
     def remove_device1(self):
-        # TODO disconnect device before removing it
+        self.devices[0].disconnect()
         self.devices[0] = None
         logger.info("Device 1 removed")
         self.Status1Label_1.setVisible(False)
@@ -172,7 +193,7 @@ class MainWindow(QtGui.QMainWindow, interface.Ui_MainWindow):
         return
 
     def remove_device2(self):
-        # TODO disconnect device before removing it
+        self.devices[1].disconnect()
         self.devices[1] = None
         logger.info("Device 2 removed")
         self.Status2Label_1.setVisible(False)
@@ -185,14 +206,21 @@ class MainWindow(QtGui.QMainWindow, interface.Ui_MainWindow):
         return
 
     def connect_device1(self):
-        self.devices[0].connect(logger)
-        self.Status1Label_2.setText("<font color='green'>connected</font>")
-        logger.info("Device 1 connected")
+        self.devices[0].connect()
+        if self.devices[0].is_connected():
+            self.Status1Label_2.setText("<font color='green'>connected</font>")
+        else:
+            self.Status1Label_2.setText("<font color='red'>not connected"
+                                        "</font>")
         return
 
     def connect_device2(self):
-        self.Status2Label_2.setText("<font color='green'>connected</font>")
-        logger.info("Device 2 connected")
+        self.devices[1].connect()
+        if self.devices[0].is_connected():
+            self.Status2Label_2.setText("<font color='green'>connected</font>")
+        else:
+            self.Status2Label_2.setText("<font color='red'>not connected"
+                                        "</font>")
         return
 
     def new_device(self):
@@ -212,7 +240,18 @@ class MainWindow(QtGui.QMainWindow, interface.Ui_MainWindow):
         return        
 
     def debug(self):
-        logger.debug("Pressed debug button")
+        # Sample values for X and Y axis
+        x=range(0, 10)
+        y=range(0, 20, 2)
+        # Discard old graph
+        self.figure.clf(keep_observers=True)
+        # Draw the plot
+        ax = self.figure.add_subplot(111)
+        ax.plot(x, y, '*-')
+        self.figure.subplots_adjust(top=1, bottom=0.13, left=0.05)
+        # Refresh canvas
+        self.canvas.draw()
+        logger.debug("Plot debugging")
         return
 
     def error(self):
