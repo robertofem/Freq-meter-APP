@@ -74,12 +74,12 @@ class DevManagerWindow(QtGui.QDialog, device_interface.Ui_DevManagerWindow):
         self.DevSerialNText.setText(dev_data['general']['Serial_N'])
         self.DevFirmVersionText.setText(dev_data['general']['FirmVersion'])
         # Load channel properties to interface.
-        self.NChannelsBox.setValue(int(dev_data['chanels']['Quantity']))
-        self.NSignalsBox.setValue(int(dev_data['chanels']['Signals']))
-        index1 = self.S1comboBox.findText(dev_data['chanels']['SigTypes']['S1'])
-        index2 = self.S2comboBox.findText(dev_data['chanels']['SigTypes']['S2'])
-        index3 = self.S3comboBox.findText(dev_data['chanels']['SigTypes']['S3'])
-        index4 = self.S4comboBox.findText(dev_data['chanels']['SigTypes']['S4'])
+        self.NChannelsBox.setValue(int(dev_data['channels']['Quantity']))
+        self.NSignalsBox.setValue(int(dev_data['channels']['Signals']))
+        index1 = self.S1comboBox.findText(dev_data['channels']['SigTypes']['S1'])
+        index2 = self.S2comboBox.findText(dev_data['channels']['SigTypes']['S2'])
+        index3 = self.S3comboBox.findText(dev_data['channels']['SigTypes']['S3'])
+        index4 = self.S4comboBox.findText(dev_data['channels']['SigTypes']['S4'])
         self.S1comboBox.setCurrentIndex(index1)
         self.S2comboBox.setCurrentIndex(index2)
         self.S3comboBox.setCurrentIndex(index3)
@@ -148,7 +148,7 @@ class DevManagerWindow(QtGui.QDialog, device_interface.Ui_DevManagerWindow):
                     CommProp4 = str(self.CommText_4.text()),
                     ),
                 ),
-            chanels = dict(
+            channels = dict(
                 Quantity = str(self.NChannelsBox.value()),
                 Signals = str(self.NSignalsBox.value()),
                 SigTypes = dict(

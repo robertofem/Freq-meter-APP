@@ -62,14 +62,14 @@ class FreqMeterDevice(object):
     def disconnect(self):
         """Disconnect from the device."""
         if self._comm_protocol == "TCP/IP":
-            if not isinstance(self._client._sock, socket._closedsocket):
+            if self._connected:
                 self._client.close()
                 self.logger.info("{}: Closed the TCP/IP client."
                             "".format(self._dev_data['general']['Name']))
                 self._connected = False
             else:
-                self.logger.debug("{}: Unable to close TCP/IP client. Already closed"
-                             ".".format(self._dev_data['general']['Name']))
+                self.logger.warn("{}: Unable to close TCP/IP client. Already"
+                        " closed".format(self._dev_data['general']['Name']))
         return self._connected
 
     def is_connected(self):

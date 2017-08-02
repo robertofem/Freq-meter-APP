@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>984</width>
+    <width>1100</width>
     <height>874</height>
    </rect>
   </property>
@@ -18,7 +18,7 @@
   </property>
   <property name="minimumSize">
    <size>
-    <width>900</width>
+    <width>1100</width>
     <height>700</height>
    </size>
   </property>
@@ -318,7 +318,7 @@
        </widget>
       </item>
       <item row="1" column="0" rowspan="3" colspan="4">
-       <widget class="QGroupBox" name="groupBox_5">
+       <widget class="QGroupBox" name="measurement_groupBox">
         <property name="title">
          <string>Measurements</string>
         </property>
@@ -376,6 +376,12 @@
              <verstretch>0</verstretch>
             </sizepolicy>
            </property>
+           <property name="minimumSize">
+            <size>
+             <width>240</width>
+             <height>0</height>
+            </size>
+           </property>
            <property name="widgetResizable">
             <bool>true</bool>
            </property>
@@ -384,7 +390,7 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>170</width>
+              <width>222</width>
               <height>380</height>
              </rect>
             </property>
@@ -549,6 +555,12 @@
              <verstretch>0</verstretch>
             </sizepolicy>
            </property>
+           <property name="minimumSize">
+            <size>
+             <width>240</width>
+             <height>0</height>
+            </size>
+           </property>
            <property name="widgetResizable">
             <bool>true</bool>
            </property>
@@ -557,7 +569,7 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>170</width>
+              <width>222</width>
               <height>380</height>
              </rect>
             </property>
@@ -743,7 +755,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>984</width>
+     <width>1100</width>
      <height>25</height>
     </rect>
    </property>

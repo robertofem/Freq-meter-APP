@@ -132,16 +132,9 @@ class MainWindow(QtGui.QMainWindow, interface.Ui_MainWindow):
         self.ax = self.figure.add_subplot(111)
         self.figure.subplots_adjust(top=0.9, bottom=0.13, left=0.1)
         self.ax.grid()
+        self.ax.set_ylabel("F(Hz)")
         # Plot data
         self.data = {'1': [], '2': []}
-
-    def update_logger_level(self):
-        """Evaluate the check boxes states and update logger level."""
-        self.log_handler.enabled[logging.DEBUG] = self.DebugCheck.isChecked()
-        self.log_handler.enabled[logging.INFO] = self.InfoCheck.isChecked()
-        self.log_handler.enabled[logging.WARN] = self.WarnCheck.isChecked()
-        self.log_handler.enabled[logging.ERROR] = self.ErrorCheck.isChecked()
-        return
 
     def load_device(self):
         """
@@ -169,7 +162,7 @@ class MainWindow(QtGui.QMainWindow, interface.Ui_MainWindow):
                 self.dev1_scrollarea.setVisible(True)
                 self.dev1label.setVisible(True)
                 self.dev1label.setText(device_name)
-                # measurement_items_setup()
+                self.measurement_items_setup(dev_path, dev=1)
                 # Devices manager area items set-up
                 self.Status1Label_1.setVisible(True)
                 self.Status1Label_2.setVisible(True)
@@ -193,6 +186,8 @@ class MainWindow(QtGui.QMainWindow, interface.Ui_MainWindow):
                 self.dev2_scrollarea.setVisible(True)
                 self.dev2label.setVisible(True)
                 self.dev2label.setText(device_name)
+                self.measurement_items_setup(dev_path, dev=2)
+                # Devices manager area items set-up
                 self.Status2Label_1.setVisible(True)
                 self.Status2Label_2.setVisible(True)
                 self.devnamelabel_2.setVisible(True)
@@ -206,6 +201,40 @@ class MainWindow(QtGui.QMainWindow, interface.Ui_MainWindow):
                 self.connectButton_2.setEnabled(True)
             else:
                 logger.warn("There are 2 devices already loaded!")
+        return
+
+    def new_device(self):
+        logger.debug("Opening Device Manager pop-up window")
+        self.popup = device_manager.DevManagerWindow()
+        self.popup.exec_()
+        self.update_devices_list()
+        return
+
+    def update_devices_list(self):
+        devices_list = [os.path.basename(match)[:-4] for match in
+                        glob.glob('resources/devices/*yml')]
+        self.DeviceComboBox.clear()
+        self.DeviceComboBox.addItem('<None>')
+        self.DeviceComboBox.addItems(devices_list)
+        logger.info("Updated devices list")
+        return        
+
+    def connect_device1(self):
+        self.devices[0].connect()
+        if self.devices[0].is_connected():
+            self.Status1Label_2.setText("<font color='green'>connected</font>")
+        else:
+            self.Status1Label_2.setText("<font color='red'>not connected"
+                                        "</font>")
+        return
+
+    def connect_device2(self):
+        self.devices[1].connect()
+        if self.devices[1].is_connected():
+            self.Status2Label_2.setText("<font color='green'>connected</font>")
+        else:
+            self.Status2Label_2.setText("<font color='red'>not connected"
+                                        "</font>")
         return
 
     def remove_device1(self):
@@ -238,53 +267,20 @@ class MainWindow(QtGui.QMainWindow, interface.Ui_MainWindow):
         self.RemoveDevice2Button.setEnabled(False)
         self.connectButton_2.setEnabled(False)
         # Measurement area items set-up
-        self.dev1_scrollarea.setVisible(False)
-        self.dev1label.setVisible(False)
+        self.dev2_scrollarea.setVisible(False)
+        self.dev2label.setVisible(False)
         return
-
-    def connect_device1(self):
-        self.devices[0].connect()
-        if self.devices[0].is_connected():
-            self.Status1Label_2.setText("<font color='green'>connected</font>")
-        else:
-            self.Status1Label_2.setText("<font color='red'>not connected"
-                                        "</font>")
-        return
-
-    def connect_device2(self):
-        self.devices[1].connect()
-        if self.devices[0].is_connected():
-            self.Status2Label_2.setText("<font color='green'>connected</font>")
-        else:
-            self.Status2Label_2.setText("<font color='red'>not connected"
-                                        "</font>")
-        return
-
-    def new_device(self):
-        logger.debug("Opening Device Manager pop-up window")
-        self.popup = device_manager.DevManagerWindow()
-        self.popup.exec_()
-        self.update_devices_list()
-        return
-
-    def update_devices_list(self):
-        devices_list = [os.path.basename(match)[:-4] for match in
-                        glob.glob('resources/devices/*yml')]
-        self.DeviceComboBox.clear()
-        self.DeviceComboBox.addItem('<None>')
-        self.DeviceComboBox.addItems(devices_list)
-        logger.info("Updated devices list")
-        return        
 
     def update_plots(self):
         # Sample values for X and Y axis
         # for i in range(10):
         self.data['1'].append(random.gauss(10, 0.5))
         self.data['2'].append(random.gauss(10, 0.1))
-        # Discard old graph
+        # Discard old graph and reset basic properties
         self.ax.cla()
-        # Draw the plot
         self.ax.grid()
+        self.ax.set_ylabel("F(Hz)")
+        # Draw the plot
         self.ax.plot(self.data['1'], 'r-')
         self.ax.plot(self.data['2'], 'b-')
         # Set the visible area
@@ -308,20 +304,79 @@ class MainWindow(QtGui.QMainWindow, interface.Ui_MainWindow):
         return
 
     def clear_plot(self):
+        self.timer.stop()
+        # Clean the data lists.
+        self.data['1'] = []
+        self.data['2'] = []
+        # Discard old graph and reset basic properties
+        self.ax.cla()
+        self.ax.grid()
+        self.ax.set_ylabel("F(Hz)")
+        # Refresh canvas
+        self.canvas.draw()
         logger.debug("Pressed clear button")
         return
 
+    def measurement_items_setup(self, conf_file, dev=1):
+        """
+        Reads the info from a conf_file and prepares the GUI items.
 
-def measurement_items_setup(conf_file, dev=1):
-    """
-    Reads the info from a conf_file and prepares the scroll area items.
-    """
-    # with open(conf_file, 'r') as read_file:
-    #         dev_data = yaml.load(read_file)
-    # channels = int(dev_data['chanels']['Quantity'])
-    # for channel in range(1, channels+1):
-    #     pass
-    return
+        There is a GroupBox for each device channel, with a maximum of
+        four. Each GroupBox is visible or invisible depending on the
+        amount of channels specified in the configuration file.
+
+        Also, the ComboBoxes representing the signals from every channel
+        are enabled or disabled depending if they have any function
+        specified in the configuration file.
+
+        Finally, the method returns a dictionary with every configured
+        device signal.
+        """
+        # Find the scroll area corresponding to the input device.
+        scrollarea_name = "dev{}_scrollarea".format(dev)
+        dev_area = ""
+        # Find the ScrollArea corresponding to the input device number.
+        for area in self.measurement_groupBox.findChildren(QtGui.QScrollArea):
+            if area.objectName() == scrollarea_name:
+                dev_area = area
+        if dev_area == "":
+            logger.debug("No ScrollArea detected with name {}".format(dev_area))
+            return None
+        # Open and load the input device configuration file.
+        with open(conf_file, 'r') as read_file:
+            dev_data = yaml.load(read_file)
+        active_signals = []
+        # Go over every group in the device area, representing each possible
+        # channel, and set the GUI configuration according to the conf file.
+        for g_index, group in enumerate(dev_area.findChildren(QtGui.QGroupBox)):
+            if g_index < int(dev_data['channels']['Quantity']):
+                group.setVisible(True)
+                active_signals.append(dict())
+                # Go over every CheckBox in the channel GroupBox and enable it
+                # if it is specified in the configuration file.
+                for c_index, checkbox in enumerate(
+                        group.findChildren(QtGui.QCheckBox)):
+                    dic_index = "S{}".format(c_index+1)
+                    sig_type = dev_data['channels']['SigTypes'][dic_index]
+                    checkbox.setText(sig_type)
+                    if sig_type != "<None>":
+                        active_signals[g_index][dic_index] = sig_type
+                        checkbox.setEnabled(True)
+                    else:
+                        checkbox.setEnabled(False)
+            # Hide the GroupBox if is not specified at the configuration file.
+            else:
+                group.setVisible(False)
+        return active_signals
+
+    def update_logger_level(self):
+        """Evaluate the check boxes states and update logger level."""
+        self.log_handler.enabled[logging.DEBUG] = self.DebugCheck.isChecked()
+        self.log_handler.enabled[logging.INFO] = self.InfoCheck.isChecked()
+        self.log_handler.enabled[logging.WARN] = self.WarnCheck.isChecked()
+        self.log_handler.enabled[logging.ERROR] = self.ErrorCheck.isChecked()
+        return
+
 
 def run():
     # The QApplication object manages the application control flow and settings.
