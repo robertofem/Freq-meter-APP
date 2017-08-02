@@ -130,9 +130,10 @@ class MainWindow(QtGui.QMainWindow, interface.Ui_MainWindow):
         self.plotVLayout.addWidget(self.toolbar)
         self.plotVLayout.addWidget(self.canvas)
         self.ax = self.figure.add_subplot(111)
-        self.figure.subplots_adjust(top=0.9, bottom=0.13, left=0.1)
+        self.figure.subplots_adjust(top=0.88, bottom=0.13, left=0.1)
         self.ax.grid()
-        self.ax.set_ylabel("F(Hz)")
+        self.ax.set_ylabel("F(Hz)", rotation= 'horizontal')
+        self.ax.yaxis.set_label_coords(-0.03, 1.04)
         # Plot data
         self.data = {'1': [], '2': []}
 
@@ -279,7 +280,8 @@ class MainWindow(QtGui.QMainWindow, interface.Ui_MainWindow):
         # Discard old graph and reset basic properties
         self.ax.cla()
         self.ax.grid()
-        self.ax.set_ylabel("F(Hz)")
+        self.ax.set_ylabel("F(Hz)", rotation= 'horizontal')
+        self.ax.yaxis.set_label_coords(-0.03, 1.04)
         # Draw the plot
         self.ax.plot(self.data['1'], 'r-')
         self.ax.plot(self.data['2'], 'b-')
@@ -311,7 +313,8 @@ class MainWindow(QtGui.QMainWindow, interface.Ui_MainWindow):
         # Discard old graph and reset basic properties
         self.ax.cla()
         self.ax.grid()
-        self.ax.set_ylabel("F(Hz)")
+        self.ax.set_ylabel("F(Hz)", rotation= 'horizontal')
+        self.ax.yaxis.set_label_coords(-0.03, 1.04)
         # Refresh canvas
         self.canvas.draw()
         logger.debug("Pressed clear button")
