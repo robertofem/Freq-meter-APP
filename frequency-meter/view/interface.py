@@ -564,7 +564,7 @@ class Ui_MainWindow(object):
         self.scrollcheckBox.setText(_translate("MainWindow", "Autoscroll", None))
         self.StopButton.setText(_translate("MainWindow", "Stop", None))
         self.StartButton.setText(_translate("MainWindow", "Start", None))
-        self.ClearButton.setText(_translate("MainWindow", "Clear", None))
+        self.ClearButton.setText(_translate("MainWindow", "Debug", None))
         self.dev1label.setText(_translate("MainWindow", "Device 1", None))
         self.dev2label.setText(_translate("MainWindow", "Device 2", None))
         self.groupBox_6.setTitle(_translate("MainWindow", "Instrument times", None))

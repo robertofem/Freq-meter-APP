@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import logging
 import os
 import sys
+import time
 import yaml
 # Third party libraries
 from PyQt4 import QtGui, QtCore
@@ -311,6 +312,13 @@ class MainWindow(QtGui.QMainWindow, interface.Ui_MainWindow):
         self.dev2label.setVisible(False)
         return
 
+    def start_plot(self):
+        # Sample values for X and Y axis
+        sample_time = self.SampleTimeBox_1.value()
+        self.timer.start(sample_time)
+        logger.debug("Start plotting")
+        return
+
     def update_plots(self):
         # Sample values for X and Y axis
         # for i in range(10):
@@ -333,30 +341,39 @@ class MainWindow(QtGui.QMainWindow, interface.Ui_MainWindow):
         logger.debug("Plot debugging")
         return
 
-    def start_plot(self):
-        # Sample values for X and Y axis
-        self.timer.start(1000)
-        logger.debug("Start plotting")
-        return
-
     def stop_plot(self):
         self.timer.stop()
         logger.debug("Pressed stop button")
         return
 
     def clear_plot(self):
-        self.timer.stop()
-        # Clean the data lists.
-        self.data['1'] = []
-        self.data['2'] = []
-        # Discard old graph and reset basic properties
-        self.ax.cla()
-        self.ax.grid()
-        self.ax.set_ylabel("F(Hz)", rotation= 'horizontal')
-        self.ax.yaxis.set_label_coords(-0.03, 1.04)
-        # Refresh canvas
-        self.canvas.draw()
-        logger.debug("Pressed clear button")
+        # Reset and configure FPGA, and initialize acquisition.
+        answer = self.devices[0].send_command("reset")
+        logger.debug("Sent 'reset' and returned '{}'".format(answer))
+        answer = self.devices[0].send_command("set_freq_coarse", 1)
+        logger.debug("Sent 'set_freq_coarse' and returned '{}'".format(answer))
+        answer = self.devices[0].send_command("init")
+        logger.debug("Sent 'init' and returned '{}'".format(answer))
+        # wait
+        time.sleep(3)
+        # Get a measurement
+        answer = self.devices[0].send_command("fetch_coarse")
+        logger.debug("Sent 'fetch_coarse' and returned '{}'".format(answer))
+        # reset FPGA
+        answer = self.devices[0].send_command("reset")
+        logger.debug("Sent 'reset' and returned '{}'".format(answer))
+        # self.timer.stop()
+        # # Clean the data lists.
+        # self.data['1'] = []
+        # self.data['2'] = []
+        # # Discard old graph and reset basic properties
+        # self.ax.cla()
+        # self.ax.grid()
+        # self.ax.set_ylabel("F(Hz)", rotation= 'horizontal')
+        # self.ax.yaxis.set_label_coords(-0.03, 1.04)
+        # # Refresh canvas
+        # self.canvas.draw()
+        # logger.debug("Pressed clear button")
         return
 
     def measurement_items_setup(self, conf_file, dev=1):

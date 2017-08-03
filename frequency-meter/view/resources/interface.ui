@@ -350,7 +350,7 @@
          <item row="4" column="5">
           <widget class="QPushButton" name="ClearButton">
            <property name="text">
-            <string>Clear</string>
+            <string>Debug</string>
            </property>
           </widget>
          </item>

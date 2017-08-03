@@ -8,6 +8,16 @@ class FreqMeterDevice(object):
     """Class for working with a frequency meter instrument"""
     _COMMANDS = {
         "ack": "*IDN?",
+        "init": "INIT",
+        "reset": "*RST",
+        "set_freq_coarse": "SENS:FREQ:COARSE:ARM:TIM",
+        "set_freq_fine": "SENS:FREQ:FINE:ARM:TIM",
+        "set_freq_fineCDT": "SENS:FREQ:FINECDT:ARM:TIM",
+        "set_freq_all": "SENS:FREQ:ALL:ARM:TIM",
+        "fetch_coarse": "FETCH:FREQ:COARSE?",
+        "fetch_fine": "FETCH:FREQ:FINE?",
+        "fetch_fineCDT": "FETCH:FREQ:FINECDT?",
+        "fetch_all": "FETCH:ALL?",
     }
     def __init__(self, dev_path, logger):
         self.logger = logger
@@ -27,17 +37,26 @@ class FreqMeterDevice(object):
                                          type=socket.SOCK_STREAM)
             self._client.settimeout(0.5)
 
-    def send_command(self, command):
+    def send_command(self, command, arg=""):
+        """
+        Send a command with an optional argument and return response.
+
+        The client will read the response message until a limit of 100
+        characters are read or a timeout exception raises (which
+        indicates that the server is not returning more values).
+        """
         cmd = self._COMMANDS[command]
+        if arg:
+            cmd = "{} {}".format(cmd, arg)
         message = ""
-        self.logger.debug("Sending {} to server".format(cmd))
+        self.logger.debug("Sending '{}'' to server".format(cmd))
         self._client.send(str.encode(cmd))
         # Read back the answer from the server.
         try:
             message = self._client.recv(100)
         except socket.timeout:
             pass
-        self.logger.debug("Received {}".format(message))
+        self.logger.debug("Received '{}'".format(message))
         return message
 
     def connect(self):
@@ -76,7 +95,9 @@ class FreqMeterDevice(object):
         return (self._connected, self._ack)
 
     def connect_and_ack(self):
-        """Open the socket connection and if succesfull, send an ACK."""
+        """
+        Open the socket connection and if succesfull, send an ACK.
+        """
         # Try to connect and to get an acknowledge.
         connected = self.connect()
         ack = self.acknowledge()
@@ -94,7 +115,7 @@ class FreqMeterDevice(object):
         return (self._connected, self._ack)
 
     def disconnect(self):
-        """Disconnect from the device."""
+        """Disconnect from the device server."""
         if self._comm_protocol == "TCP/IP":
             if self._connected:
                 self._client.send(b"EXIT")
@@ -108,6 +129,13 @@ class FreqMeterDevice(object):
         return self._connected
 
     def acknowledge(self):
+        """
+        Send the ACK command for checking if the device is correct.
+
+        This is used to check that the client has been connected to the
+        correct server, which implements the same communications
+        protocol.
+        """
         message = self.send_command("ack")
         if message != "":
             self._ack = True
