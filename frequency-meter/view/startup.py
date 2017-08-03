@@ -155,6 +155,7 @@ class MainWindow(QtGui.QMainWindow, interface.Ui_MainWindow):
             if not glob.glob(dev_path):
                 logger.warn("Selected device does not longer exist")
                 return
+            # Load device to first slot.
             if self.devices[0] is None:
                 self.devices[0] = freqmeterdevice.FreqMeterDevice(dev_path,
                                                                   logger)
@@ -179,6 +180,7 @@ class MainWindow(QtGui.QMainWindow, interface.Ui_MainWindow):
                     self.DeviceComboBox.setEnabled(False)
                 self.RemoveDevice1Button.setEnabled(True)
                 self.connectButton_1.setEnabled(True)
+            # Load device to second slot.
             elif self.devices[1] is None:
                 self.devices[1] = freqmeterdevice.FreqMeterDevice(dev_path,
                                                                   logger)
@@ -221,25 +223,61 @@ class MainWindow(QtGui.QMainWindow, interface.Ui_MainWindow):
         return        
 
     def connect_device1(self):
-        self.devices[0].connect()
+        """
+        Connect or disconnect the device depending on the previous state
+        """
         if self.devices[0].is_connected():
-            self.Status1Label_2.setText("<font color='green'>connected</font>")
+            # disconnect device 1
+            connected = self.devices[0].disconnect()
+            if not connected:
+                self.connectButton_1.setText("connect")
+                self.Status1Label_2.setText("<font color='red'>not connected"
+                                            "</font>")
         else:
-            self.Status1Label_2.setText("<font color='red'>not connected"
-                                        "</font>")
+            # Try connection and update status label and connect button
+            connected, ack = self.devices[0].connect_and_ack()
+            if connected and ack:
+                self.Status1Label_2.setText("<font color='green'>connected"
+                                            "</font>")
+                self.connectButton_1.setText("disconnect")
+            elif connected and not ack:
+                self.Status1Label_2.setText("<font color='orange'>connected."
+                                            " No ACK</font>")
+                self.connectButton_1.setText("disconnect")
+            else:
+                self.Status1Label_2.setText("<font color='red'>not connected"
+                                            "</font>")
         return
 
     def connect_device2(self):
-        self.devices[1].connect()
+        """
+        Connect or disconnect the device depending on the previous state
+        """
         if self.devices[1].is_connected():
-            self.Status2Label_2.setText("<font color='green'>connected</font>")
+            # disconnect device 1
+            connected = self.devices[1].disconnect()
+            if not connected:
+                self.connectButton_2.setText("connect")
+                self.Status2Label_2.setText("<font color='red'>not connected"
+                                            "</font>")
         else:
-            self.Status2Label_2.setText("<font color='red'>not connected"
-                                        "</font>")
+            # Try connection and update status label and connect button
+            connected, ack = self.devices[1].connect_and_ack()
+            if connected and ack:
+                self.Status2Label_2.setText("<font color='green'>connected"
+                                            "</font>")
+                self.connectButton_2.setText("disconnect")
+            elif connected and not ack:
+                self.Status2Label_2.setText("<font color='orange'>connected."
+                                            " No ACK</font>")
+            else:
+                self.Status2Label_2.setText("<font color='red'>not connected"
+                                            "</font>")
         return
 
     def remove_device1(self):
-        self.devices[0].disconnect()
+        if self.devices[0].is_connected():
+            self.connect_device1()
         self.devices[0] = None
         logger.info("Device 1 removed")
         self.Status1Label_1.setVisible(False)
@@ -256,7 +294,8 @@ class MainWindow(QtGui.QMainWindow, interface.Ui_MainWindow):
         return
 
     def remove_device2(self):
-        self.devices[1].disconnect()
+        if self.devices[1].is_connected():
+            self.connect_device2()
         self.devices[1] = None
         logger.info("Device 2 removed")
         self.Status2Label_1.setVisible(False)
