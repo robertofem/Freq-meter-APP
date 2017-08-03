@@ -315,15 +315,20 @@ class MainWindow(QtGui.QMainWindow, interface.Ui_MainWindow):
     def start_plot(self):
         # Sample values for X and Y axis
         sample_time = self.SampleTimeBox_1.value()
-        self.timer.start(sample_time)
-        logger.debug("Start plotting")
+        # Reset and configure FPGA, and initialize acquisition.
+        answer = self.devices[0].send_command("reset")
+        answer = self.devices[0].send_command("set_freq_coarse", sample_time)
+        answer = self.devices[0].send_command("init")
+        # Set timer (in milliseconds)
+        self.timer.start(sample_time * 1000)
+        logger.debug("Start sampling every {} seconds".format(sample_time))
         return
 
     def update_plots(self):
-        # Sample values for X and Y axis
-        # for i in range(10):
-        self.data['1'].append(random.gauss(10, 0.5))
-        self.data['2'].append(random.gauss(10, 0.1))
+        # Get a measurement from FPGA.
+        answer = self.devices[0].send_command("fetch_coarse")
+        measurement = float(answer.decode())
+        self.data['1'].append(measurement)
         # Discard old graph and reset basic properties
         self.ax.cla()
         self.ax.grid()
@@ -331,14 +336,13 @@ class MainWindow(QtGui.QMainWindow, interface.Ui_MainWindow):
         self.ax.yaxis.set_label_coords(-0.03, 1.04)
         # Draw the plot
         self.ax.plot(self.data['1'], 'r-')
-        self.ax.plot(self.data['2'], 'b-')
         # Set the visible area
         if self.scrollcheckBox.isChecked():
             if len(self.data['1']) > 100:
                 self.ax.set_xlim(len(self.data['1']) - 100, len(self.data['1']))
         # Refresh canvas
         self.canvas.draw()
-        logger.debug("Plot debugging")
+        logger.debug("Plot new sample: {}".format(measurement))
         return
 
     def stop_plot(self):
@@ -347,33 +351,7 @@ class MainWindow(QtGui.QMainWindow, interface.Ui_MainWindow):
         return
 
     def clear_plot(self):
-        # Reset and configure FPGA, and initialize acquisition.
-        answer = self.devices[0].send_command("reset")
-        logger.debug("Sent 'reset' and returned '{}'".format(answer))
-        answer = self.devices[0].send_command("set_freq_coarse", 1)
-        logger.debug("Sent 'set_freq_coarse' and returned '{}'".format(answer))
-        answer = self.devices[0].send_command("init")
-        logger.debug("Sent 'init' and returned '{}'".format(answer))
-        # wait
-        time.sleep(3)
-        # Get a measurement
-        answer = self.devices[0].send_command("fetch_coarse")
-        logger.debug("Sent 'fetch_coarse' and returned '{}'".format(answer))
-        # reset FPGA
-        answer = self.devices[0].send_command("reset")
-        logger.debug("Sent 'reset' and returned '{}'".format(answer))
-        # self.timer.stop()
-        # # Clean the data lists.
-        # self.data['1'] = []
-        # self.data['2'] = []
-        # # Discard old graph and reset basic properties
-        # self.ax.cla()
-        # self.ax.grid()
-        # self.ax.set_ylabel("F(Hz)", rotation= 'horizontal')
-        # self.ax.yaxis.set_label_coords(-0.03, 1.04)
-        # # Refresh canvas
-        # self.canvas.draw()
-        # logger.debug("Pressed clear button")
+        pass
         return
 
     def measurement_items_setup(self, conf_file, dev=1):

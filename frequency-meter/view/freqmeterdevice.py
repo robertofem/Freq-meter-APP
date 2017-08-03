@@ -25,6 +25,7 @@ class FreqMeterDevice(object):
         self._client = None
         self._connected = False
         self._ack = False
+        self._timeout = 0.2
         # Read and load the device configuration file
         self._dev_path = dev_path
         with open(self._dev_path, 'r') as read_file:
@@ -35,7 +36,7 @@ class FreqMeterDevice(object):
         if self._comm_protocol == "TCP/IP":
             self._client = socket.socket(family=socket.AF_INET,
                                          type=socket.SOCK_STREAM)
-            self._client.settimeout(0.5)
+            self._client.settimeout(self._timeout)
 
     def send_command(self, command, arg=""):
         """
@@ -45,11 +46,14 @@ class FreqMeterDevice(object):
         characters are read or a timeout exception raises (which
         indicates that the server is not returning more values).
         """
+        if not self._connected:
+            self.logger.warn("Device not connected")
+            return
         cmd = self._COMMANDS[command]
         if arg:
             cmd = "{} {}".format(cmd, arg)
         message = ""
-        self.logger.debug("Sending '{}'' to server".format(cmd))
+        self.logger.debug("Sending '{}' to server".format(cmd))
         self._client.send(str.encode(cmd))
         # Read back the answer from the server.
         try:
@@ -78,7 +82,7 @@ class FreqMeterDevice(object):
             self.logger.debug("Conecting to IP {} and port {}".format(ip, port))
             self._client = socket.socket(family=socket.AF_INET,
                                          type=socket.SOCK_STREAM)
-            self._client.settimeout(0.5)
+            self._client.settimeout(self._timeout)
             try:
                 self._client.connect((ip, port))
             except (socket.timeout, ConnectionRefusedError) as error:
