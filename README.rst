@@ -1,3 +1,6 @@
+.. role:: bash(code)
+   :language: bash
+
 Frequency-meter APP
 ===================
 
@@ -8,7 +11,7 @@ Frequency-meter APP
 
 :Version: 1.0.0-alpha
 
-Application with an integrated Graphical User Interface (GUI) for communicating with a frequency meter attached to an FPGA and displaying its state
+Application with an integrated Graphical User Interface (GUI) for communicating with a frequency meter attached to an FPGA and displaying its state.
 
 Ubuntu 16.04 set-up for developing
 ==================================
@@ -20,7 +23,7 @@ First of all, download the project source code from the repository with *git*. T
    cd ~/<path-to-chosen-parent-folder>
    git clone https://github.com/jlrandulfe/Frequency-meter-APP.git
 
-Create a virtual environment and, with the *pip* tool, install the required python packages for the project. Note that the installed python version must be specified on the environment creation (Can be obtained typing :bash:`python3 --version`):
+Create a virtual environment and, with the *pip* tool, install the required python packages for the project. Note that the installed python version must be specified on the environment creation (Can be obtained typing :bash:`python3 --version`)
 
 .. code-block:: bash
 
