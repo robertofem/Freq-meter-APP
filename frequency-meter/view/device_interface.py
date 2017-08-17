@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'view/resources/device_interface.ui'
 #
-# Created by: PyQt5 UI code generator 5.5.1
+# Created by: PyQt5 UI code generator 5.9
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -148,9 +148,11 @@ class Ui_DevManagerWindow(object):
         self.gridLayout_7 = QtWidgets.QGridLayout(self.groupBox_3)
         self.gridLayout_7.setObjectName("gridLayout_7")
         self.MegaOhmcheckBox = QtWidgets.QCheckBox(self.groupBox_3)
+        self.MegaOhmcheckBox.setAutoExclusive(True)
         self.MegaOhmcheckBox.setObjectName("MegaOhmcheckBox")
         self.gridLayout_7.addWidget(self.MegaOhmcheckBox, 0, 1, 1, 1)
         self.Ohm50checkBox = QtWidgets.QCheckBox(self.groupBox_3)
+        self.Ohm50checkBox.setAutoExclusive(True)
         self.Ohm50checkBox.setObjectName("Ohm50checkBox")
         self.gridLayout_7.addWidget(self.Ohm50checkBox, 0, 0, 1, 1)
         spacerItem1 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)

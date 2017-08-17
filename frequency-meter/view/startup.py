@@ -16,6 +16,8 @@ from PyQt5 import QtGui, QtCore, QtWidgets
 from view import device_manager
 from view import freqmeterdevice
 from view import interface
+# library for testing
+import random
 
 # Create the application logger, with a previously defined configuration.
 logger = logging.getLogger('view')
@@ -90,7 +92,7 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         # Test buttons
         self.StartButton.clicked.connect(self.start_plot)
         self.StopButton.clicked.connect(self.stop_plot)
-        self.ClearButton.clicked.connect(self.clear_plot)
+        self.DebugButton.clicked.connect(self.debug)
         # Log console level selection buttons
         self.DebugCheck.clicked.connect(self.update_logger_level)
         self.InfoCheck.clicked.connect(self.update_logger_level)
@@ -120,7 +122,7 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         self.devices = [None, None]
         # Qt timer set-up for updating the plots.
         self.timer = QtCore.QTimer()
-        self.timer.timeout.connect(self.update_plots)
+        self.timer.timeout.connect(self.debug_plot)
         # plot layout set-up.
         self.figure = plt.figure()
         self.figure.patch.set_alpha(0)
@@ -129,12 +131,14 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         self.plotVLayout.addWidget(self.toolbar)
         self.plotVLayout.addWidget(self.canvas)
         self.ax = self.figure.add_subplot(111)
-        self.figure.subplots_adjust(top=0.88, bottom=0.13, left=0.1)
+        self.figure.subplots_adjust(top=0.85, bottom=0.10, left=0.1)
         self.ax.grid()
         self.ax.set_ylabel("F(Hz)", rotation= 'horizontal')
-        self.ax.yaxis.set_label_coords(-0.03, 1.04)
+        self.ax.yaxis.set_label_coords(-0.05, 1.04)
         # Plot data
         self.data = {'1': [], '2': []}
+        self.signals = [[], []]
+        self.cboxes = [[], []]
 
     def load_device(self):
         """
@@ -154,6 +158,7 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
             if not glob.glob(dev_path):
                 logger.warn("Selected device does not longer exist")
                 return
+            self.TimesgroupBox.setEnabled(True)
             # Load device to first slot.
             if self.devices[0] is None:
                 self.devices[0] = freqmeterdevice.FreqMeterDevice(dev_path,
@@ -163,7 +168,8 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
                 self.dev1_scrollarea.setVisible(True)
                 self.dev1label.setVisible(True)
                 self.dev1label.setText(device_name)
-                self.measurement_items_setup(dev_path, dev=1)
+                self.signals[0], self.cboxes[0] = self.items_setup(dev_path,
+                                                                   dev=1)
                 # Devices manager area items set-up
                 self.Status1Label_1.setVisible(True)
                 self.Status1Label_2.setVisible(True)
@@ -188,7 +194,8 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
                 self.dev2_scrollarea.setVisible(True)
                 self.dev2label.setVisible(True)
                 self.dev2label.setText(device_name)
-                self.measurement_items_setup(dev_path, dev=2)
+                self.signals[1], self.cboxes[1] = self.items_setup(dev_path,
+                                                                   dev=2)
                 # Devices manager area items set-up
                 self.Status2Label_1.setVisible(True)
                 self.Status2Label_2.setVisible(True)
@@ -290,6 +297,9 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         # Measurement area items set-up
         self.dev1_scrollarea.setVisible(False)
         self.dev1label.setVisible(False)
+        # Disable the times group box if any device is loaded.
+        if self.devices[1] is None:
+            self.TimesgroupBox.setEnabled(False)
         return
 
     def remove_device2(self):
@@ -308,11 +318,20 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         # Measurement area items set-up
         self.dev2_scrollarea.setVisible(False)
         self.dev2label.setVisible(False)
+        # Disable the times group box if any device is loaded.
+        if self.devices[0] is None:
+            self.TimesgroupBox.setEnabled(False)
         return
 
     def start_plot(self):
+        if self.devices[0] is None:
+            logger.warn("Any device was loaded on the first slot")
+            return
+        elif not self.devices[0]._connected:
+            logger.warn("The device is not connected")
+            return
         # Sample values for X and Y axis
-        sample_time = self.SampleTimeBox_1.value()
+        sample_time = self.SampleTimeBox.value()
         # Reset and configure FPGA, and initialize acquisition.
         answer = self.devices[0].send_command("reset")
         answer = self.devices[0].send_command("set_freq_coarse", sample_time)
@@ -348,11 +367,53 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         logger.debug("Pressed stop button")
         return
 
-    def clear_plot(self):
-        pass
+    def debug(self):
+        sample_time = self.SampleTimeBox.value()
+        self.timer.start(sample_time * 1000)
+        logger.debug("Start sampling every {} seconds".format(sample_time))
         return
 
-    def measurement_items_setup(self, conf_file, dev=1):
+    def debug_plot(self):
+        # Discard old graph and reset basic properties
+        self.ax.cla()
+        self.ax.grid()
+        self.ax.set_ylabel("F(Hz)", rotation= 'horizontal')
+        self.ax.yaxis.set_label_coords(-0.05, 1.04)
+        n_channels = int(self.devices[0]._dev_data['channels']['Quantity'])
+        n_signals = int(self.devices[0]._dev_data['channels']['Signals'])
+        sig_types = self.devices[0]._dev_data['channels']['SigTypes']
+        # Go over every device channel
+        for ch_index in range(n_channels):
+            # Go over every Signal in the channel and plot its value if it is
+            # specified in the corresponding CheckBox.
+            for signal_index in range(n_signals):
+                dic_index = "S{}".format(signal_index+1)
+                sig_type = sig_types[dic_index]
+                # Get new value and append it to data set.
+                value = random.gauss(10, 1+signal_index)
+                self.data['1'][ch_index][dic_index].append(value)
+                if self.cboxes[0][ch_index][dic_index].isChecked():
+                    # Draw the plot
+                    self.ax.plot(self.data['1'][ch_index][dic_index],
+                                 label="Dev-{dev} Ch-{channel} {signal}"
+                                       "".format(dev=1, channel=ch_index+1,
+                                                 signal=sig_type)
+                                )
+        handles, labels = self.ax.get_legend_handles_labels()
+        plt.legend(bbox_to_anchor=(0., 1.02, 1., 0.102), loc=3, ncol=3,
+                   mode="expand", borderaxespad=0., fontsize='xx-small')
+        # self.ax.legend(handles, labels, fontsize=)
+        # self.ax.plot(self.data['1'])
+        # self.ax.plot(self.data['2'])
+        # Set the visible area
+        if self.scrollcheckBox.isChecked():
+            if len(self.data['1']) > 100:
+                self.ax.set_xlim(len(self.data['1']) - 100, len(self.data['1']))
+        # Refresh canvas
+        self.canvas.draw()
+        logger.debug("Plot new sample: {}".format(value))
+
+    def items_setup(self, conf_file, dev=1):
         """
         Reads the info from a conf_file and prepares the GUI items.
 
@@ -369,40 +430,45 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         """
         # Find the scroll area corresponding to the input device.
         scrollarea_name = "dev{}_scrollarea".format(dev)
-        dev_area = ""
+        dev_sa = ""
         # Find the ScrollArea corresponding to the input device number.
-        for area in self.measurement_groupBox.findChildren(QtWidgets.QScrollArea):
-            if area.objectName() == scrollarea_name:
-                dev_area = area
-        if dev_area == "":
-            logger.debug("No ScrollArea detected with name {}".format(dev_area))
+        for sa in self.measurement_groupBox.findChildren(QtWidgets.QScrollArea):
+            if sa.objectName() == scrollarea_name:
+                dev_sa = sa
+        if dev_sa == "":
+            logger.debug("No ScrollArea detected with name {}".format(dev_sa))
             return None
         # Open and load the input device configuration file.
         with open(conf_file, 'r') as read_file:
             dev_data = yaml.load(read_file)
         active_signals = []
+        active_checkboxes = []
         # Go over every group in the device area, representing each possible
         # channel, and set the GUI configuration according to the conf file.
-        for g_index, group in enumerate(dev_area.findChildren(QtWidgets.QGroupBox)):
-            if g_index < int(dev_data['channels']['Quantity']):
+        for g_idx, group in enumerate(dev_sa.findChildren(QtWidgets.QGroupBox)):
+            if g_idx < int(dev_data['channels']['Quantity']):
                 group.setVisible(True)
+                self.data[str(dev)].append(dict())
                 active_signals.append(dict())
+                active_checkboxes.append(dict())
                 # Go over every CheckBox in the channel GroupBox and enable it
                 # if it is specified in the configuration file.
-                for c_index, checkbox in enumerate(
+                for c_idx, checkbox in enumerate(
                         group.findChildren(QtWidgets.QCheckBox)):
-                    dic_index = "S{}".format(c_index+1)
+                    dic_index = "S{}".format(c_idx+1)
                     sig_type = dev_data['channels']['SigTypes'][dic_index]
                     checkbox.setText(sig_type)
                     if sig_type != "<None>":
-                        active_signals[g_index][dic_index] = sig_type
+                        self.data[str(dev)][g_idx][dic_index] = []
+                        active_signals[g_idx][dic_index] = sig_type
+                        active_checkboxes[g_idx][dic_index] = checkbox
                         checkbox.setEnabled(True)
                     else:
                         checkbox.setEnabled(False)
             # Hide the GroupBox if is not specified at the configuration file.
             else:
                 group.setVisible(False)
-        return active_signals
+        return (active_signals, active_checkboxes)
 
     def update_logger_level(self):
         """Evaluate the check boxes states and update logger level."""
