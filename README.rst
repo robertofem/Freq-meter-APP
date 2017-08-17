@@ -23,7 +23,7 @@ First of all, download the project source code from the repository with *git*. T
    cd ~/<path-to-chosen-parent-folder>
    git clone https://github.com/jlrandulfe/Frequency-meter-APP.git
 
-Create a virtual environment and, with the *pip* tool, install the required python packages for the project. Note that the installed python version must be specified on the environment creation (Can be obtained typing :bash:`python3 --version`)
+Create a virtual environment and, with the *pip* tool, install the required python packages for the project. Note that the installed python version must be specified on the environment creation (Can be obtained typing :bash:`python3 --version`):
 
 .. code-block:: bash
 
@@ -38,10 +38,9 @@ Create a virtual environment and, with the *pip* tool, install the required pyth
    cd ~/<path-to-chosen-parent-folder>/Frequency-meter-APP
    pip3 install -r requirements.txt
 
-Finally, install the required system libraries, which can not be installed with *pip*:
+Finally, install a required system library, which can not be installed with *pip*:
 
 .. code-block:: bash
 
-   sudo apt-get install python3-pyqt5
-   sudo apt-get install pyqt5-dev-tools
+   sudo apt-get install python3-tk
    
