@@ -6,17 +6,17 @@ import os
 import sys
 import yaml
 # Third party libraries
-from PyQt4 import QtGui, QtCore
+from PyQt5 import QtGui, QtCore, QtWidgets
 # Local libraries
 from view import device_interface
 
 
-class DevManagerWindow(QtGui.QDialog, device_interface.Ui_DevManagerWindow):
+class DevManagerWindow(QtWidgets.QDialog, device_interface.Ui_DevManagerWindow):
     """
     Class for defining the behaviour of the Device Manager Interface.
     """
     def __init__(self):
-        QtGui.QDialog.__init__(self)
+        QtWidgets.QDialog.__init__(self)
         self.setupUi(self)
         # Default group visibility
         self.CommPropertiesgroupBox.setVisible(False)
@@ -31,11 +31,11 @@ class DevManagerWindow(QtGui.QDialog, device_interface.Ui_DevManagerWindow):
         Check which button was pressed and perform corresponding action.
         """
         clicked_button = self.buttonBox.standardButton(button)
-        if clicked_button == QtGui.QDialogButtonBox.Save:
+        if clicked_button == QtWidgets.QDialogButtonBox.Save:
             self.save_device()
-        elif clicked_button == QtGui.QDialogButtonBox.Open:
+        elif clicked_button == QtWidgets.QDialogButtonBox.Open:
             self.open_device()
-        elif clicked_button == QtGui.QDialogButtonBox.Cancel:
+        elif clicked_button == QtWidgets.QDialogButtonBox.Cancel:
             self.show_exit_dialog()
         return
 
@@ -43,11 +43,11 @@ class DevManagerWindow(QtGui.QDialog, device_interface.Ui_DevManagerWindow):
         """
         Ask the user if he/she wants to exit the DevManager window.
         """
-        reply = QtGui.QMessageBox.question(self, 'Exit message',
+        reply = QtWidgets.QMessageBox.question(self, 'Exit message',
                                            "Do you want to exit?", 
-                                           QtGui.QMessageBox.Yes,
-                                           QtGui.QMessageBox.No)
-        if reply == QtGui.QMessageBox.Yes:
+                                           QtWidgets.QMessageBox.Yes,
+                                           QtWidgets.QMessageBox.No)
+        if reply == QtWidgets.QMessageBox.Yes:
             self.close()
         return
 
@@ -58,13 +58,17 @@ class DevManagerWindow(QtGui.QDialog, device_interface.Ui_DevManagerWindow):
         After loading the configuration, it is shown in the user
         interface, allowing the user to watch and modify it.
         """
-        dev_dir = "{}/resources/devices/".format(os.getcwd())
-        file = QtGui.QFileDialog.getOpenFileName(self, 'Open file', dev_dir)
+        path = "{}/resources/devices/".format(os.getcwd())
+        file = QtWidgets.QFileDialog.getOpenFileName(self, 'Open file', path)[0]
+        # If cancel button is pressed, return from function.
+        if file == "":
+            return
+        # Open the specified file and parse it with yaml.
         with open(file, 'r') as conf_file:
             try:
                 dev_data = yaml.load(conf_file)
             except yaml.parser.ParserError:
-                err_text = "<font color='red'>Can open only '.yml' files!</font>"
+                err_text = "<font color='red'>Can open only 'YML' files!</font>"
                 self.ErrorLabel.setText(err_text)
                 return
         # Load general properties to interface.
@@ -76,14 +80,14 @@ class DevManagerWindow(QtGui.QDialog, device_interface.Ui_DevManagerWindow):
         # Load channel properties to interface.
         self.NChannelsBox.setValue(int(dev_data['channels']['Quantity']))
         self.NSignalsBox.setValue(int(dev_data['channels']['Signals']))
-        index1 = self.S1comboBox.findText(dev_data['channels']['SigTypes']['S1'])
-        index2 = self.S2comboBox.findText(dev_data['channels']['SigTypes']['S2'])
-        index3 = self.S3comboBox.findText(dev_data['channels']['SigTypes']['S3'])
-        index4 = self.S4comboBox.findText(dev_data['channels']['SigTypes']['S4'])
-        self.S1comboBox.setCurrentIndex(index1)
-        self.S2comboBox.setCurrentIndex(index2)
-        self.S3comboBox.setCurrentIndex(index3)
-        self.S4comboBox.setCurrentIndex(index4)
+        indx1 = self.S1comboBox.findText(dev_data['channels']['SigTypes']['S1'])
+        indx2 = self.S2comboBox.findText(dev_data['channels']['SigTypes']['S2'])
+        indx3 = self.S3comboBox.findText(dev_data['channels']['SigTypes']['S3'])
+        indx4 = self.S4comboBox.findText(dev_data['channels']['SigTypes']['S4'])
+        self.S1comboBox.setCurrentIndex(indx1)
+        self.S2comboBox.setCurrentIndex(indx2)
+        self.S3comboBox.setCurrentIndex(indx3)
+        self.S4comboBox.setCurrentIndex(indx4)
         # Load communication properties to interface.
         c_index = self.CommProtocolBox.findText(dev_data['communications']
                                                         ['Protocol'])
@@ -120,12 +124,12 @@ class DevManagerWindow(QtGui.QDialog, device_interface.Ui_DevManagerWindow):
         elif glob.glob("resources/devices/{}.yml".format(dev_name)):
             question = ("It already exists a device configuration with the name"
                     " {}. Do you want to overwrite it?".format(dev_name)) 
-            reply = QtGui.QMessageBox.question(self, 'Message', question,
-                                               QtGui.QMessageBox.Yes,
-                                               QtGui.QMessageBox.No)
+            reply = QtWidgets.QMessageBox.question(self, 'Message', question,
+                                               QtWidgets.QMessageBox.Yes,
+                                               QtWidgets.QMessageBox.No)
             err_text = ""
             self.ErrorLabel.setText(err_text)
-            if reply == QtGui.QMessageBox.No:
+            if reply == QtWidgets.QMessageBox.No:
                 return
         else:
             err_text = ""
