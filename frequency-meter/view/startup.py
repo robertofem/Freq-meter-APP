@@ -2,21 +2,20 @@
 """Application main executable, for initializing the whole program"""
 # Standard libraries
 import glob
-from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT as NavTbar
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavTbar
 import matplotlib.pyplot as plt
 import logging
 import os
 import sys
+import time
 import yaml
 # Third party libraries
-from PyQt4 import QtGui, QtCore
+from PyQt5 import QtGui, QtCore, QtWidgets
 # Local libraries
 from view import device_manager
 from view import freqmeterdevice
 from view import interface
-# Test library
-import random
 
 # Create the application logger, with a previously defined configuration.
 logger = logging.getLogger('view')
@@ -74,12 +73,12 @@ class AppLogHandler(logging.Handler):
         return
 
 
-class MainWindow(QtGui.QMainWindow, interface.Ui_MainWindow):
+class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
     """
     Class for defining the behaviour of the User Interface main window.
     """
     def __init__(self):
-        QtGui.QMainWindow.__init__(self)
+        QtWidgets.QMainWindow.__init__(self)
         # Run the windows initialization routines.
         self.setupUi(self)
         self.popup = None
@@ -155,6 +154,7 @@ class MainWindow(QtGui.QMainWindow, interface.Ui_MainWindow):
             if not glob.glob(dev_path):
                 logger.warn("Selected device does not longer exist")
                 return
+            # Load device to first slot.
             if self.devices[0] is None:
                 self.devices[0] = freqmeterdevice.FreqMeterDevice(dev_path,
                                                                   logger)
@@ -179,6 +179,7 @@ class MainWindow(QtGui.QMainWindow, interface.Ui_MainWindow):
                     self.DeviceComboBox.setEnabled(False)
                 self.RemoveDevice1Button.setEnabled(True)
                 self.connectButton_1.setEnabled(True)
+            # Load device to second slot.
             elif self.devices[1] is None:
                 self.devices[1] = freqmeterdevice.FreqMeterDevice(dev_path,
                                                                   logger)
@@ -221,25 +222,61 @@ class MainWindow(QtGui.QMainWindow, interface.Ui_MainWindow):
         return        
 
     def connect_device1(self):
-        self.devices[0].connect()
+        """
+        Connect or disconnect the device depending on the previous state
+        """
         if self.devices[0].is_connected():
-            self.Status1Label_2.setText("<font color='green'>connected</font>")
+            # disconnect device 1
+            connected = self.devices[0].disconnect()
+            if not connected:
+                self.connectButton_1.setText("connect")
+                self.Status1Label_2.setText("<font color='red'>not connected"
+                                            "</font>")
         else:
-            self.Status1Label_2.setText("<font color='red'>not connected"
-                                        "</font>")
+            # Try connection and update status label and connect button
+            connected, ack = self.devices[0].connect_and_ack()
+            if connected and ack:
+                self.Status1Label_2.setText("<font color='green'>connected"
+                                            "</font>")
+                self.connectButton_1.setText("disconnect")
+            elif connected and not ack:
+                self.Status1Label_2.setText("<font color='orange'>connected."
+                                            " No ACK</font>")
+                self.connectButton_1.setText("disconnect")
+            else:
+                self.Status1Label_2.setText("<font color='red'>not connected"
+                                            "</font>")
         return
 
     def connect_device2(self):
-        self.devices[1].connect()
+        """
+        Connect or disconnect the device depending on the previous state
+        """
         if self.devices[1].is_connected():
-            self.Status2Label_2.setText("<font color='green'>connected</font>")
+            # disconnect device 1
+            connected = self.devices[1].disconnect()
+            if not connected:
+                self.connectButton_2.setText("connect")
+                self.Status2Label_2.setText("<font color='red'>not connected"
+                                            "</font>")
         else:
-            self.Status2Label_2.setText("<font color='red'>not connected"
-                                        "</font>")
+            # Try connection and update status label and connect button
+            connected, ack = self.devices[1].connect_and_ack()
+            if connected and ack:
+                self.Status2Label_2.setText("<font color='green'>connected"
+                                            "</font>")
+                self.connectButton_2.setText("disconnect")
+            elif connected and not ack:
+                self.Status2Label_2.setText("<font color='orange'>connected."
+                                            " No ACK</font>")
+            else:
+                self.Status2Label_2.setText("<font color='red'>not connected"
+                                            "</font>")
         return
 
     def remove_device1(self):
-        self.devices[0].disconnect()
+        if self.devices[0].is_connected():
+            self.connect_device1()
         self.devices[0] = None
         logger.info("Device 1 removed")
         self.Status1Label_1.setVisible(False)
@@ -256,7 +293,8 @@ class MainWindow(QtGui.QMainWindow, interface.Ui_MainWindow):
         return
 
     def remove_device2(self):
-        self.devices[1].disconnect()
+        if self.devices[1].is_connected():
+            self.connect_device2()
         self.devices[1] = None
         logger.info("Device 2 removed")
         self.Status2Label_1.setVisible(False)
@@ -272,11 +310,23 @@ class MainWindow(QtGui.QMainWindow, interface.Ui_MainWindow):
         self.dev2label.setVisible(False)
         return
 
-    def update_plots(self):
+    def start_plot(self):
         # Sample values for X and Y axis
-        # for i in range(10):
-        self.data['1'].append(random.gauss(10, 0.5))
-        self.data['2'].append(random.gauss(10, 0.1))
+        sample_time = self.SampleTimeBox_1.value()
+        # Reset and configure FPGA, and initialize acquisition.
+        answer = self.devices[0].send_command("reset")
+        answer = self.devices[0].send_command("set_freq_coarse", sample_time)
+        answer = self.devices[0].send_command("init")
+        # Set timer (in milliseconds)
+        self.timer.start(sample_time * 1000)
+        logger.debug("Start sampling every {} seconds".format(sample_time))
+        return
+
+    def update_plots(self):
+        # Get a measurement from FPGA.
+        answer = self.devices[0].send_command("fetch_coarse")
+        measurement = float(answer.decode())
+        self.data['1'].append(measurement)
         # Discard old graph and reset basic properties
         self.ax.cla()
         self.ax.grid()
@@ -284,20 +334,13 @@ class MainWindow(QtGui.QMainWindow, interface.Ui_MainWindow):
         self.ax.yaxis.set_label_coords(-0.03, 1.04)
         # Draw the plot
         self.ax.plot(self.data['1'], 'r-')
-        self.ax.plot(self.data['2'], 'b-')
         # Set the visible area
         if self.scrollcheckBox.isChecked():
             if len(self.data['1']) > 100:
                 self.ax.set_xlim(len(self.data['1']) - 100, len(self.data['1']))
         # Refresh canvas
         self.canvas.draw()
-        logger.debug("Plot debugging")
-        return
-
-    def start_plot(self):
-        # Sample values for X and Y axis
-        self.timer.start(1000)
-        logger.debug("Start plotting")
+        logger.debug("Plot new sample: {}".format(measurement))
         return
 
     def stop_plot(self):
@@ -306,18 +349,7 @@ class MainWindow(QtGui.QMainWindow, interface.Ui_MainWindow):
         return
 
     def clear_plot(self):
-        self.timer.stop()
-        # Clean the data lists.
-        self.data['1'] = []
-        self.data['2'] = []
-        # Discard old graph and reset basic properties
-        self.ax.cla()
-        self.ax.grid()
-        self.ax.set_ylabel("F(Hz)", rotation= 'horizontal')
-        self.ax.yaxis.set_label_coords(-0.03, 1.04)
-        # Refresh canvas
-        self.canvas.draw()
-        logger.debug("Pressed clear button")
+        pass
         return
 
     def measurement_items_setup(self, conf_file, dev=1):
@@ -339,7 +371,7 @@ class MainWindow(QtGui.QMainWindow, interface.Ui_MainWindow):
         scrollarea_name = "dev{}_scrollarea".format(dev)
         dev_area = ""
         # Find the ScrollArea corresponding to the input device number.
-        for area in self.measurement_groupBox.findChildren(QtGui.QScrollArea):
+        for area in self.measurement_groupBox.findChildren(QtWidgets.QScrollArea):
             if area.objectName() == scrollarea_name:
                 dev_area = area
         if dev_area == "":
@@ -351,14 +383,14 @@ class MainWindow(QtGui.QMainWindow, interface.Ui_MainWindow):
         active_signals = []
         # Go over every group in the device area, representing each possible
         # channel, and set the GUI configuration according to the conf file.
-        for g_index, group in enumerate(dev_area.findChildren(QtGui.QGroupBox)):
+        for g_index, group in enumerate(dev_area.findChildren(QtWidgets.QGroupBox)):
             if g_index < int(dev_data['channels']['Quantity']):
                 group.setVisible(True)
                 active_signals.append(dict())
                 # Go over every CheckBox in the channel GroupBox and enable it
                 # if it is specified in the configuration file.
                 for c_index, checkbox in enumerate(
-                        group.findChildren(QtGui.QCheckBox)):
+                        group.findChildren(QtWidgets.QCheckBox)):
                     dic_index = "S{}".format(c_index+1)
                     sig_type = dev_data['channels']['SigTypes'][dic_index]
                     checkbox.setText(sig_type)
@@ -383,9 +415,9 @@ class MainWindow(QtGui.QMainWindow, interface.Ui_MainWindow):
 
 def run():
     # The QApplication object manages the application control flow and settings.
-    app = QtGui.QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
     # Set to a GTK allowed style in order to avoid annoying erros on Ubuntu.
-    app.setStyle(QtGui.QStyleFactory.create("plastique"))
+    app.setStyle(QtWidgets.QStyleFactory.create("plastique"))
     form = MainWindow()
     form.show()
     sys.exit(app.exec_())

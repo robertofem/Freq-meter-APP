@@ -1,0 +1,24 @@
+chanels:
+  Quantity: '1'
+  SigTypes:
+    S1: <None>
+    S2: <None>
+    S3: <None>
+    S4: <None>
+  Signals: '1'
+communications:
+  Properties:
+    CommProp1: ''
+    CommProp2: ''
+    CommProp3: ''
+    CommProp4: ''
+  Protocol: <None>
+general:
+  FirmVersion: ''
+  Model: ''
+  Name: test2
+  Serial_N: ''
+  Vendor: ''
+impedance:
+  R1MOhm: 'True'
+  R50Ohm: 'False'
