@@ -2,8 +2,8 @@
 """Application main executable, for initializing the whole program"""
 # Standard libraries
 import glob
-from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT as NavTbar
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavTbar
 import matplotlib.pyplot as plt
 import logging
 import os
@@ -11,13 +11,11 @@ import sys
 import time
 import yaml
 # Third party libraries
-from PyQt4 import QtGui, QtCore
+from PyQt5 import QtGui, QtCore, QtWidgets
 # Local libraries
 from view import device_manager
 from view import freqmeterdevice
 from view import interface
-# Test library
-import random
 
 # Create the application logger, with a previously defined configuration.
 logger = logging.getLogger('view')
@@ -75,12 +73,12 @@ class AppLogHandler(logging.Handler):
         return
 
 
-class MainWindow(QtGui.QMainWindow, interface.Ui_MainWindow):
+class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
     """
     Class for defining the behaviour of the User Interface main window.
     """
     def __init__(self):
-        QtGui.QMainWindow.__init__(self)
+        QtWidgets.QMainWindow.__init__(self)
         # Run the windows initialization routines.
         self.setupUi(self)
         self.popup = None
@@ -373,7 +371,7 @@ class MainWindow(QtGui.QMainWindow, interface.Ui_MainWindow):
         scrollarea_name = "dev{}_scrollarea".format(dev)
         dev_area = ""
         # Find the ScrollArea corresponding to the input device number.
-        for area in self.measurement_groupBox.findChildren(QtGui.QScrollArea):
+        for area in self.measurement_groupBox.findChildren(QtWidgets.QScrollArea):
             if area.objectName() == scrollarea_name:
                 dev_area = area
         if dev_area == "":
@@ -385,14 +383,14 @@ class MainWindow(QtGui.QMainWindow, interface.Ui_MainWindow):
         active_signals = []
         # Go over every group in the device area, representing each possible
         # channel, and set the GUI configuration according to the conf file.
-        for g_index, group in enumerate(dev_area.findChildren(QtGui.QGroupBox)):
+        for g_index, group in enumerate(dev_area.findChildren(QtWidgets.QGroupBox)):
             if g_index < int(dev_data['channels']['Quantity']):
                 group.setVisible(True)
                 active_signals.append(dict())
                 # Go over every CheckBox in the channel GroupBox and enable it
                 # if it is specified in the configuration file.
                 for c_index, checkbox in enumerate(
-                        group.findChildren(QtGui.QCheckBox)):
+                        group.findChildren(QtWidgets.QCheckBox)):
                     dic_index = "S{}".format(c_index+1)
                     sig_type = dev_data['channels']['SigTypes'][dic_index]
                     checkbox.setText(sig_type)
@@ -417,9 +415,9 @@ class MainWindow(QtGui.QMainWindow, interface.Ui_MainWindow):
 
 def run():
     # The QApplication object manages the application control flow and settings.
-    app = QtGui.QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
     # Set to a GTK allowed style in order to avoid annoying erros on Ubuntu.
-    app.setStyle(QtGui.QStyleFactory.create("plastique"))
+    app.setStyle(QtWidgets.QStyleFactory.create("plastique"))
     form = MainWindow()
     form.show()
     sys.exit(app.exec_())
