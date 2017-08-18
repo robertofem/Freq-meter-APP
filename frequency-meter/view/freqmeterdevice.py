@@ -96,6 +96,7 @@ class FreqMeterDevice(object):
         else:
             self._connected = False
             self._ack = False
+            connection_error = "Unknown protocol"
             self.logger.warn("Unable to work with specified protocol '{}'"
                         "".format(self._comm_protocol))
         return (self._connected, connection_error)
