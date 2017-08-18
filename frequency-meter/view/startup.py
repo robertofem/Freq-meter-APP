@@ -148,6 +148,8 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         self.data = {'1': [], '2': []}
         self.signals = [[], []]
         self.cboxes = [[], []]
+        # Plotting initialization counter
+        self.counter = 0
 
     def load_device(self):
         """
@@ -285,13 +287,18 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         answer = self.devices[0].send_command("reset")
         answer = self.devices[0].send_command("set_freq_coarse", sample_time)
         answer = self.devices[0].send_command("init")
-        # Set timer (in milliseconds)
+        # Set timer (in milliseconds) and seconds counter
         self.timer.start(sample_time * 1000)
         logger.debug("Start sampling every {} seconds".format(sample_time))
-        # logger.debug("Sleeping 3 seconds"); time.sleep(3)
+        self.counter = 0
         return
 
     def update_plots(self):
+        # Ignore the first 3 measurements.
+        if self.counter <= 3:
+            self.counter += 1
+            logger.debug("Init delay. {} seconds elapsed.".format(self.counter))
+            return
         # Get a measurement from FPGA.
         answer = self.devices[0].send_command("fetch_coarse")
         measurement = float(answer.decode())
