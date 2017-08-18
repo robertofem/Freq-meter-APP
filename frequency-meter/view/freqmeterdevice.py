@@ -89,21 +89,24 @@ class FreqMeterDevice(object):
                 self._client.close()
                 self._connected = False
                 self._ack = False
+                connection_error = error
             else:
                 self._connected = True
+                connection_error = ""
         else:
             self._connected = False
             self._ack = False
+            connection_error = "Unknown protocol"
             self.logger.warn("Unable to work with specified protocol '{}'"
                         "".format(self._comm_protocol))
-        return (self._connected, self._ack)
+        return (self._connected, connection_error)
 
     def connect_and_ack(self):
         """
         Open the socket connection and if succesfull, send an ACK.
         """
         # Try to connect and to get an acknowledge.
-        connected = self.connect()
+        connected, error = self.connect()
         ack = self.acknowledge()
         dev_name = self._dev_data['general']['Name']
         # Evaluate the connection state and send to logger information
@@ -140,9 +143,13 @@ class FreqMeterDevice(object):
         correct server, which implements the same communications
         protocol.
         """
+        if not self._connected:
+            return
         message = self.send_command("ack")
         if message != "":
             self._ack = True
+        else:
+            self._ack = False
         return self._ack
 
     def is_connected(self):
