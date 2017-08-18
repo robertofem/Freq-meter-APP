@@ -60,6 +60,7 @@ Install newest version of Python 3 for Windows (This has been tested with versio
 In cmd (Windows Command Prompt) create a virtual environment and, with the *pip* tool, install the required python packages for the project:
 
 .. code-block:: bash
+
    # Install the virtual environment management library (Windows port); and set-up commands and OS environment
    sudo pip3 install virtualenvwrapper-win
    #WORKON_HOME (the path to store environments) is by default %USERPROFILE%\Envs
