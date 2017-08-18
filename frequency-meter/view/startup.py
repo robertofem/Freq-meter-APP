@@ -160,7 +160,6 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         if device_name == "<None>":
             logger.warn("No device selected")
             return
-        # elif (device_name == device.text() for device in self.device_labels):
         elif device_name in (self.device_labels[0].text(),
                              self.device_labels[1].text()):
             logger.warn("Selected device is already loaded")
@@ -258,10 +257,12 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
             self.connect_device(dev=dev)
         self.devices[dev-1] = None
         logger.info("Device {} removed".format(dev))
+        # Update the text of corresponding labels and buttons.
         self.status_labels[dev-1].setVisible(False)
         self.connected_labels[dev-1].setVisible(False)
         self.devname_labels_l[dev-1].setVisible(False)
         self.devname_labels_r[dev-1].setText("")
+        self.device_labels[dev-1].setText("")
         self.LoadDeviceButton.setEnabled(True)
         self.DeviceComboBox.setEnabled(True)
         self.remove_buttons[dev-1].setEnabled(False)
