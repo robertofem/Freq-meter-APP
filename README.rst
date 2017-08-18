@@ -46,13 +46,28 @@ Finally, install a required system library, which can not be installed with *pip
 
 
 
-Windows 10 set-up for running
+Windows set-up for developing
 =============================
+First of all, download the project source code from the repository with *git*. The project will be stored on a local folder named **Frequency-meter-APP**:
 
-* Install Python 3 (pip should already come with Python 3 installer, otherwise install it)
-* Open command prompt. Navigate till the project folder.
-* pip3 install -r requirements.txt
-* pip3 install SIP
-* Download qt from https://download.qt.io/archive/qt/4.8/4.8.6/ and install it
-* Add C:\Qt\4.8.6\bin to the Windows PATH (Right click My Computer->Advanced Configuration->Environment Variables->PATH).
-*
+.. code-block:: bash
+   
+   cd <path-to-chosen-parent-folder>
+   git clone https://github.com/jlrandulfe/Frequency-meter-APP.git
+
+Install newest version of Python 3 for Windows (This has been tested with version 3.6.2. The python package manager pip should already be automatically installed when installing python. Otherwise install it. Also remember to add Pyhon to the system PATH varibles (Check that option during installation) so Windows command prompt can later find python interpreter and pip.
+  
+In cmd (Windows Command Prompt) create a virtual environment and, with the *pip* tool, install the required python packages for the project:
+
+.. code-block:: bash
+   # Install the virtual environment management library (Windows port); and set-up commands and OS environment
+   sudo pip3 install virtualenvwrapper-win
+   #WORKON_HOME (the path to store environments) is by default %USERPROFILE%\Envs
+   # Create a Python3 virtual environment and install the project dependencies
+   mkvirtualenv <env-name>
+   cd <path-to-chosen-parent-folder>/Frequency-meter-APP
+   pip3 install -r requirements.txt
+
+In windows TK is installed with the Python3 installer so it is already in the system.
+
+This installation process has been succesfully run in Windows 7 and Windows 10.
