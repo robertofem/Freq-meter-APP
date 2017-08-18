@@ -282,6 +282,9 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         elif not self.devices[0]._connected:
             logger.warn("The device is not connected")
             return
+        # Delete the previous data values
+        self.data['1'][0]['S1'] = []
+        logger.debug("Cleaning older stored data")
         # Sample values for X and Y axis
         sample_time = self.SampleTimeBox.value()
         # Reset and configure FPGA, and initialize acquisition.
@@ -296,7 +299,7 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
 
     def update_plots(self):
         # Ignore the first 3 measurements.
-        if self.counter <= 3:
+        if self.counter < 3:
             self.counter += 1
             logger.debug("Init delay. {} seconds elapsed.".format(self.counter))
             return
