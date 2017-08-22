@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'view/resources/interface.ui'
+# Form implementation generated from reading ui file 'resources/interface.ui'
 #
 # Created by: PyQt5 UI code generator 5.9
 #
@@ -182,7 +182,7 @@ class Ui_MainWindow(object):
         self.dev1_scrollarea.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
         self.dev1_scrollarea.setObjectName("dev1_scrollarea")
         self.scrollAreaWidgetContents = QtWidgets.QWidget()
-        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 222, 386))
+        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 221, 334))
         self.scrollAreaWidgetContents.setObjectName("scrollAreaWidgetContents")
         self.verticalLayout = QtWidgets.QVBoxLayout(self.scrollAreaWidgetContents)
         self.verticalLayout.setContentsMargins(0, 0, 0, 0)
@@ -275,7 +275,7 @@ class Ui_MainWindow(object):
         self.dev2_scrollarea.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
         self.dev2_scrollarea.setObjectName("dev2_scrollarea")
         self.scrollAreaWidgetContents_2 = QtWidgets.QWidget()
-        self.scrollAreaWidgetContents_2.setGeometry(QtCore.QRect(0, 0, 222, 386))
+        self.scrollAreaWidgetContents_2.setGeometry(QtCore.QRect(0, 0, 221, 334))
         self.scrollAreaWidgetContents_2.setObjectName("scrollAreaWidgetContents_2")
         self.verticalLayout_2 = QtWidgets.QVBoxLayout(self.scrollAreaWidgetContents_2)
         self.verticalLayout_2.setContentsMargins(0, 9, 0, 0)
@@ -447,14 +447,12 @@ class Ui_MainWindow(object):
         self.statusbar.setObjectName("statusbar")
         MainWindow.setStatusBar(self.statusbar)
         self.menuBar = QtWidgets.QMenuBar(MainWindow)
-        self.menuBar.setGeometry(QtCore.QRect(0, 0, 1100, 25))
+        self.menuBar.setGeometry(QtCore.QRect(0, 0, 1100, 21))
         self.menuBar.setObjectName("menuBar")
         self.menuFile = QtWidgets.QMenu(self.menuBar)
         self.menuFile.setObjectName("menuFile")
         self.menuHelp = QtWidgets.QMenu(self.menuBar)
         self.menuHelp.setObjectName("menuHelp")
-        self.menuPlugins = QtWidgets.QMenu(self.menuBar)
-        self.menuPlugins.setObjectName("menuPlugins")
         self.menuTools = QtWidgets.QMenu(self.menuBar)
         self.menuTools.setObjectName("menuTools")
         MainWindow.setMenuBar(self.menuBar)
@@ -481,13 +479,14 @@ class Ui_MainWindow(object):
         self.actionDevice_Manager.setObjectName("actionDevice_Manager")
         self.actionEdit = QtWidgets.QAction(MainWindow)
         self.actionEdit.setObjectName("actionEdit")
+        self.actionFPGAcalibration = QtWidgets.QAction(MainWindow)
+        self.actionFPGAcalibration.setObjectName("actionFPGAcalibration")
         self.menuFile.addAction(self.actionExit)
         self.menuHelp.addAction(self.actionAbout)
-        self.menuPlugins.addAction(self.actionFPGA_sensor_callibrator)
         self.menuTools.addAction(self.actionDevice_Manager)
+        self.menuTools.addAction(self.actionFPGAcalibration)
         self.menuBar.addAction(self.menuFile.menuAction())
         self.menuBar.addAction(self.menuTools.menuAction())
-        self.menuBar.addAction(self.menuPlugins.menuAction())
         self.menuBar.addAction(self.menuHelp.menuAction())
 
         self.retranslateUi(MainWindow)
@@ -573,7 +572,6 @@ class Ui_MainWindow(object):
         self.SaveButton.setText(_translate("MainWindow", "Save"))
         self.menuFile.setTitle(_translate("MainWindow", "File"))
         self.menuHelp.setTitle(_translate("MainWindow", "Help"))
-        self.menuPlugins.setTitle(_translate("MainWindow", "Plugins"))
         self.menuTools.setTitle(_translate("MainWindow", "Tools"))
         self.actionFile.setText(_translate("MainWindow", "File"))
         self.actionSave.setText(_translate("MainWindow", "Save"))
@@ -583,6 +581,17 @@ class Ui_MainWindow(object):
         self.actionAbout.setText(_translate("MainWindow", "About ..."))
         self.actionFPGA_sensor_callibrator.setText(_translate("MainWindow", "FPGA sensor callibrator"))
         self.actionDevice_manager.setText(_translate("MainWindow", "Device manager"))
-        self.actionDevice_Manager.setText(_translate("MainWindow", "Device manager ..."))
+        self.actionDevice_Manager.setText(_translate("MainWindow", "Device manager"))
         self.actionEdit.setText(_translate("MainWindow", "Edit"))
+        self.actionFPGAcalibration.setText(_translate("MainWindow", "FPGA frequency meter calibration"))
+
+
+if __name__ == "__main__":
+    import sys
+    app = QtWidgets.QApplication(sys.argv)
+    MainWindow = QtWidgets.QMainWindow()
+    ui = Ui_MainWindow()
+    ui.setupUi(MainWindow)
+    MainWindow.show()
+    sys.exit(app.exec_())
 

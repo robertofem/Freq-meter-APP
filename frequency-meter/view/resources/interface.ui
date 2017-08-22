@@ -391,8 +391,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>222</width>
-              <height>386</height>
+              <width>221</width>
+              <height>334</height>
              </rect>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout">
@@ -602,8 +602,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>222</width>
-              <height>386</height>
+              <width>221</width>
+              <height>334</height>
              </rect>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -960,7 +960,7 @@
      <x>0</x>
      <y>0</y>
      <width>1100</width>
-     <height>25</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -975,21 +975,15 @@
     </property>
     <addaction name="actionAbout"/>
    </widget>
-   <widget class="QMenu" name="menuPlugins">
-    <property name="title">
-     <string>Plugins</string>
-    </property>
-    <addaction name="actionFPGA_sensor_callibrator"/>
-   </widget>
    <widget class="QMenu" name="menuTools">
     <property name="title">
      <string>Tools</string>
     </property>
     <addaction name="actionDevice_Manager"/>
+    <addaction name="actionFPGAcalibration"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuTools"/>
-   <addaction name="menuPlugins"/>
    <addaction name="menuHelp"/>
   </widget>
   <action name="actionFile">
@@ -1043,12 +1037,17 @@
   </action>
   <action name="actionDevice_Manager">
    <property name="text">
-    <string>Device manager ...</string>
+    <string>Device manager</string>
    </property>
   </action>
   <action name="actionEdit">
    <property name="text">
     <string>Edit</string>
+   </property>
+  </action>
+  <action name="actionFPGAcalibration">
+   <property name="text">
+    <string>FPGA frequency meter calibration</string>
    </property>
   </action>
  </widget>

@@ -14,6 +14,7 @@ import yaml
 from PyQt5 import QtGui, QtCore, QtWidgets
 # Local libraries
 from view import device_manager
+from view import calibration
 from view import freqmeterdevice
 from view import interface
 # library for testing
@@ -85,6 +86,9 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         self.setupUi(self)
         self.popup = None
         self.update_devices_list()
+        # Configure the Menu bar actionSave
+        self.menuTools.triggered[QtWidgets.QAction].connect(self.open_calib)
+
         # Configure the logger, assigning an instance of AppLogHandler.
         self.log_handler = AppLogHandler(self.LoggerBrowser)
         logger.addHandler(self.log_handler)
@@ -164,7 +168,7 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
                              self.device_labels[1].text()):
             logger.warn("Selected device is already loaded")
             return
-        # Deal with the situation where the conf file is deleted since 
+        # Deal with the situation where the conf file is deleted since
         # the last time the list was refreshed.
         dev_dir = "{}/resources/devices/".format(os.getcwd())
         dev_path = "{dir}{dev}.yml".format(dir=dev_dir, dev=device_name)
@@ -210,7 +214,15 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         logger.debug("Opening Device Manager pop-up window")
         self.popup = device_manager.DevManagerWindow()
         self.popup.exec_()
+        self.popup = None;
         self.update_devices_list()
+        return
+
+    def open_calib(self):
+        logger.debug("Opening FPGA device Calibration pop-up window")
+        self.popup = calibration.CalibWindow()
+        self.popup.exec_()
+        self.popup = None;
         return
 
     def update_devices_list(self):
@@ -220,7 +232,7 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         self.DeviceComboBox.addItem('<None>')
         self.DeviceComboBox.addItems(devices_list)
         logger.info("Updated devices list")
-        return        
+        return
 
     def connect_device(self, dev):
         """

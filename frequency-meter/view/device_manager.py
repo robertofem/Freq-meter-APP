@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Application main executable, for initializing the whole program"""
+"""Device manager"""
 # Standard libraries
 import glob
 import os
@@ -44,7 +44,7 @@ class DevManagerWindow(QtWidgets.QDialog, device_interface.Ui_DevManagerWindow):
         Ask the user if he/she wants to exit the DevManager window.
         """
         reply = QtWidgets.QMessageBox.question(self, 'Exit message',
-                                           "Do you want to exit?", 
+                                           "Do you want to exit?",
                                            QtWidgets.QMessageBox.Yes,
                                            QtWidgets.QMessageBox.No)
         if reply == QtWidgets.QMessageBox.Yes:
@@ -54,7 +54,7 @@ class DevManagerWindow(QtWidgets.QDialog, device_interface.Ui_DevManagerWindow):
     def open_device(self):
         """
         Open a Qt file dialog and load a .yml configuration
-        
+
         After loading the configuration, it is shown in the user
         interface, allowing the user to watch and modify it.
         """
@@ -123,7 +123,7 @@ class DevManagerWindow(QtWidgets.QDialog, device_interface.Ui_DevManagerWindow):
         # Check if the device already exists and ask user for overwriting it.
         elif glob.glob("resources/devices/{}.yml".format(dev_name)):
             question = ("It already exists a device configuration with the name"
-                    " {}. Do you want to overwrite it?".format(dev_name)) 
+                    " {}. Do you want to overwrite it?".format(dev_name))
             reply = QtWidgets.QMessageBox.question(self, 'Message', question,
                                                QtWidgets.QMessageBox.Yes,
                                                QtWidgets.QMessageBox.No)
@@ -200,7 +200,7 @@ class DevManagerWindow(QtWidgets.QDialog, device_interface.Ui_DevManagerWindow):
     def protocol_change(self):
         """
         Update the communication labels/boxes texts and visible status.
-        """ 
+        """
         if self.CommProtocolBox.currentText() == "TCP/IP":
             self.CommPropertiesgroupBox.setVisible(True)
             # Property 1 settings.
@@ -262,7 +262,7 @@ class DevManagerWindow(QtWidgets.QDialog, device_interface.Ui_DevManagerWindow):
             self.CommText_3.setVisible(False)
             # Property 4 settings.
             self.CommLabel_4.setVisible(False)
-            self.CommText_4.setVisible(False)  
+            self.CommText_4.setVisible(False)
         else:
             self.CommPropertiesgroupBox.setVisible(False)
         return
