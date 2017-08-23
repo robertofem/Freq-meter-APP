@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'resources/calibration_interface.ui'
+# Form implementation generated from reading ui file 'view/resources/calibration_interface.ui'
 #
 # Created by: PyQt5 UI code generator 5.9
 #
@@ -11,7 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_CalibWindow(object):
     def setupUi(self, CalibWindow):
         CalibWindow.setObjectName("CalibWindow")
-        CalibWindow.resize(1008, 687)
+        CalibWindow.resize(789, 653)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -55,10 +55,14 @@ class Ui_CalibWindow(object):
         self.label_coarse_mess = QtWidgets.QLabel(self.groupBox_coarse)
         self.label_coarse_mess.setObjectName("label_coarse_mess")
         self.verticalLayout_2.addWidget(self.label_coarse_mess)
+        spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        self.verticalLayout_2.addItem(spacerItem)
         self.plotVLayout_coarse = QtWidgets.QVBoxLayout()
         self.plotVLayout_coarse.setSizeConstraint(QtWidgets.QLayout.SetDefaultConstraint)
         self.plotVLayout_coarse.setObjectName("plotVLayout_coarse")
         self.verticalLayout_2.addLayout(self.plotVLayout_coarse)
+        spacerItem1 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        self.verticalLayout_2.addItem(spacerItem1)
         self.horizontalLayout_2.addLayout(self.verticalLayout_2)
         self.horizontalLayout_8.addWidget(self.groupBox_coarse)
         self.groupBox_fine = QtWidgets.QGroupBox(CalibWindow)
@@ -77,6 +81,11 @@ class Ui_CalibWindow(object):
         self.horizontalLayout_7.addWidget(self.button_stop_fine)
         self.verticalLayout_3.addLayout(self.horizontalLayout_7)
         self.label_fine_mess = QtWidgets.QLabel(self.groupBox_fine)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Minimum)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.label_fine_mess.sizePolicy().hasHeightForWidth())
+        self.label_fine_mess.setSizePolicy(sizePolicy)
         self.label_fine_mess.setObjectName("label_fine_mess")
         self.verticalLayout_3.addWidget(self.label_fine_mess)
         self.plotVLayout_fine = QtWidgets.QVBoxLayout()
@@ -111,8 +120,8 @@ class Ui_CalibWindow(object):
         self.comboBoxDevToCalib = QtWidgets.QComboBox(CalibWindow)
         self.comboBoxDevToCalib.setObjectName("comboBoxDevToCalib")
         self.horizontalLayout_3.addWidget(self.comboBoxDevToCalib)
-        spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
-        self.horizontalLayout_3.addItem(spacerItem)
+        spacerItem2 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.horizontalLayout_3.addItem(spacerItem2)
         self.gridLayout.addLayout(self.horizontalLayout_3, 0, 1, 1, 1)
 
         self.retranslateUi(CalibWindow)
