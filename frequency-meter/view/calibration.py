@@ -3,6 +3,8 @@
 # Standard libraries
 import os
 import sys
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+import matplotlib.pyplot as plt
 # Third party libraries
 from PyQt5 import QtGui, QtCore, QtWidgets
 # Local libraries
@@ -24,6 +26,31 @@ class CalibWindow(QtWidgets.QDialog, calibration_interface.Ui_CalibWindow):
         self.button_stop_fine.clicked.connect(self.stop_fine)
         # Button box events (accept/reject)
         self.buttonBox.clicked.connect(self.handle_buttonBox_click)
+
+        #Initialize coarse calibration plots
+        self.figure_coarse = plt.figure()
+        self.figure_coarse.patch.set_alpha(0)
+        self.canvas_coarse = FigureCanvas(self.figure_coarse)
+        self.plotVLayout_coarse.addWidget(self.canvas_coarse)
+        self.ax_coarse = self.figure_coarse.add_subplot(111)
+        self.figure_coarse.subplots_adjust(top=0.85, bottom=0.10, left=0.1)
+        self.ax_coarse.grid()
+        self.ax_coarse.set_ylabel("F(Hz)", rotation= 'horizontal')
+        self.ax_coarse.yaxis.set_label_coords(-0.05, 1.04)
+
+        #Initialize fine calibration plots
+        self.figure_fine = plt.figure()
+        self.figure_fine.patch.set_alpha(0)
+        self.canvas_fine = FigureCanvas(self.figure_fine)
+        self.plotVLayout_fine.addWidget(self.canvas_fine)
+        self.ax_fine_cdt = self.figure_fine.add_subplot(311)
+        self.ax_fine_dnl = self.figure_fine.add_subplot(312)
+        self.ax_fine_inl = self.figure_fine.add_subplot(313)
+        self.figure_fine.subplots_adjust(top=0.85, bottom=0.10, left=0.1)
+        self.ax_fine_cdt.grid()
+        self.ax_fine_dnl.grid()
+        self.ax_fine_inl.grid()
+
 
     def handle_buttonBox_click(self, button):
         """
