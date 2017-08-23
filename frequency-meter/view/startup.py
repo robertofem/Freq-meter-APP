@@ -22,6 +22,7 @@ import random
 # Create the application logger, with a previously defined configuration.
 logger = logging.getLogger('view')
 
+
 class AppLogHandler(logging.Handler):
     """
     Customized logging handler class, for printing on a PyQt Widget.
@@ -60,7 +61,7 @@ class AppLogHandler(logging.Handler):
         """Override the logging.Handler.emit method.
 
         The received log message will be printed on the specified
-        widget, tipically a TextBox.
+        widget, typically a TextBox.
         """
         # Only print on the log the enabled log levels.
         if not self.enabled[record.levelno]:
@@ -88,7 +89,7 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         # Configure the logger, assigning an instance of AppLogHandler.
         self.log_handler = AppLogHandler(self.LoggerBrowser)
         logger.addHandler(self.log_handler)
-        logger.info("Initialized the Frequency-Metter Application")
+        logger.info("Initialized the Frequency-Meter Application")
         # Test buttons
         self.StartButton.clicked.connect(self.start_plot)
         self.StopButton.clicked.connect(self.stop_plot)
@@ -158,18 +159,18 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         device_name = self.DeviceComboBox.currentText()
         # Return if the ComboBox has not a valid item selected.
         if device_name == "<None>":
-            logger.warn("No device selected")
+            logger.warning("No device selected")
             return
         elif device_name in (self.device_labels[0].text(),
                              self.device_labels[1].text()):
-            logger.warn("Selected device is already loaded")
+            logger.warning("Selected device is already loaded")
             return
-        # Deal with the situation where the conf file is deleted since 
+        # Deal with the situation where the conf file is deleted since
         # the last time the list was refreshed.
         dev_dir = "{}/resources/devices/".format(os.getcwd())
         dev_path = "{dir}{dev}.yml".format(dir=dev_dir, dev=device_name)
         if not glob.glob(dev_path):
-            logger.warn("Selected device does not longer exist")
+            logger.warning("Selected device does not longer exist")
             return
         self.TimesgroupBox.setEnabled(True)
         # Look for the first available slot. Return if both are being used.
@@ -178,9 +179,9 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         elif self.devices[1] is None:
             dev = 2
         else:
-            logger.warn("There are 2 devices already loaded!")
+            logger.warning("There are 2 devices already loaded!")
             return
-        self.devices[dev-1] = freqmeterdevice.FreqMeterDevice(dev_path, logger)
+        self.devices[dev-1] = freqmeterdevice.UviFreqMeter(dev_path, logger)
         logger.info("Loaded the device {dev}".format(dev=device_name))
         # Measurement area items set-up
         self.device_scrollareas[dev-1].setVisible(True)
@@ -220,7 +221,7 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         self.DeviceComboBox.addItem('<None>')
         self.DeviceComboBox.addItems(devices_list)
         logger.info("Updated devices list")
-        return        
+        return
 
     def connect_device(self, dev):
         """
@@ -234,22 +235,24 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
             connected = self.devices[dev-1].disconnect()
             if not connected:
                 self.connect_buttons[dev-1].setText("connect")
-                self.connected_labels[dev-1].setText("<font color='red'>"
-                                            "not connected</font>")
+                self.connected_labels[dev-1].setText(
+                        "<font color='red'>not connected</font>")
         else:
             # Try a connection and update status label and connect button text.
-            connected, ack = self.devices[dev-1].connect_and_ack()
-            if connected and ack:
-                self.connected_labels[dev-1].setText("<font color='green'>"
-                                            "connected</font>")
-                self.connect_buttons[dev-1].setText("disconnect")
-            elif connected and not ack:
-                self.connected_labels[dev-1].setText("<font color='orange'>"
-                                            "connected. No ACK</font>")
-                self.connect_buttons[dev-1].setText("disconnect")
+            connected, _ = self.devices[dev-1].connect()
+            if connected:
+                ready = self.devices[dev - 1].is_ready()
+                if ready:
+                    self.connected_labels[dev-1].setText(
+                            "<font color='green'>connected</font>")
+                    self.connect_buttons[dev-1].setText("disconnect")
+                else:
+                    self.connected_labels[dev-1].setText(
+                            "<font color='orange'>connected. No ACK</font>")
+                    self.connect_buttons[dev-1].setText("disconnect")
             else:
-                self.connected_labels[dev-1].setText("<font color='red'>"
-                                            "not connected</font>")
+                self.connected_labels[dev-1].setText(
+                        "<font color='red'>not connected</font>")
         return
 
     def remove_device(self, dev):
@@ -277,10 +280,10 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
 
     def start_plot(self):
         if self.devices[0] is None:
-            logger.warn("Any device was loaded on the first slot")
+            logger.warning("Any device was loaded on the first slot")
             return
-        elif not self.devices[0]._connected:
-            logger.warn("The device is not connected")
+        elif not self.devices[0].is_connected():
+            logger.warning("The device is not connected")
             return
         # Delete the previous data values
         self.data['1'][0]['S1'] = []
@@ -288,9 +291,7 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         # Sample values for X and Y axis
         sample_time = self.SampleTimeBox.value()
         # Reset and configure FPGA, and initialize acquisition.
-        answer = self.devices[0].send_command("reset")
-        answer = self.devices[0].send_command("set_freq_coarse", sample_time)
-        answer = self.devices[0].send_command("init")
+        answer = self.devices[0].start_measurement(sample_time)
         # Set timer (in milliseconds) and seconds counter
         self.timer.start(sample_time * 1000)
         logger.debug("Start sampling every {} seconds".format(sample_time))
@@ -304,8 +305,8 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
             logger.debug("Init delay. {} seconds elapsed.".format(self.counter))
             return
         # Get a measurement from FPGA.
-        answer = self.devices[0].send_command("fetch_coarse")
-        measurement = float(answer.decode())
+        reply = self.devices[0].fetch_freq()
+        measurement = reply['coarse']
         self.data['1'][0]['S1'].append(measurement)
         # Discard old graph and reset basic properties
         self.ax.cla()
@@ -439,7 +440,7 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
 def run():
     # The QApplication object manages the application control flow and settings.
     app = QtWidgets.QApplication(sys.argv)
-    # Set to a GTK allowed style in order to avoid annoying erros on Ubuntu.
+    # Set to a GTK allowed style in order to avoid annoying errors on Ubuntu.
     app.setStyle(QtWidgets.QStyleFactory.create("plastique"))
     form = MainWindow()
     form.show()
