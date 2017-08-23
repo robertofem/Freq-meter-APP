@@ -46,7 +46,7 @@ class CalibWindow(QtWidgets.QDialog, calibration_interface.Ui_CalibWindow):
         self.ax_fine_cdt = self.figure_fine.add_subplot(311)
         self.ax_fine_dnl = self.figure_fine.add_subplot(312)
         self.ax_fine_inl = self.figure_fine.add_subplot(313)
-        self.figure_fine.subplots_adjust(top=0.15, bottom=0.10, left=0.1)
+        self.figure_fine.subplots_adjust(top=0.85, bottom=0.10, left=0.1)
         self.ax_fine_cdt.grid()
         self.ax_fine_dnl.grid()
         self.ax_fine_inl.grid()
