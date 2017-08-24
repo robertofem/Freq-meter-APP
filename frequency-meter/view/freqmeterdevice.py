@@ -1,161 +1,162 @@
 #!/usr/bin/env python3
 # Standard libraries
-import os
-import socket
+import abc
 import yaml
+from view import clientprotocol
 
-class FreqMeterDevice(object):
-    """Class for working with a frequency meter instrument"""
-    _COMMANDS = {
-        "ack": "*IDN?",
-        "init": "INIT",
-        "reset": "*RST",
-        "set_freq_coarse": "SENS:FREQ:COARSE:ARM:TIM",
-        "set_freq_fine": "SENS:FREQ:FINE:ARM:TIM",
-        "set_freq_fineCDT": "SENS:FREQ:FINECDT:ARM:TIM",
-        "set_freq_all": "SENS:FREQ:ALL:ARM:TIM",
-        "fetch_coarse": "FETCH:FREQ:COARSE?",
-        "fetch_fine": "FETCH:FREQ:FINE?",
-        "fetch_fineCDT": "FETCH:FREQ:FINECDT?",
-        "fetch_all": "FETCH:ALL?",
-    }
+
+class FreqMeter(abc.ABC):
+    @staticmethod
+    def get_freq_meter(dev_path, logger):
+        with open(dev_path, 'r') as read_file:
+            data = yaml.load(read_file)
+            vendor = data["general"]["Vendor"]
+        if vendor == "Uvigo":
+            return UviFreqMeter(dev_path, logger)
+        elif vendor == "Agilent":
+            return AgilentFreqMeter(dev_path, logger)
+        else:
+            return None
+
     def __init__(self, dev_path, logger):
         self.logger = logger
-        # Communications socket for a TCP/IP communication.
-        self._client = None
-        self._connected = False
-        self._ack = False
-        self._timeout = 0.2
         # Read and load the device configuration file
-        self._dev_path = dev_path
-        with open(self._dev_path, 'r') as read_file:
+        with open(dev_path, 'r') as read_file:
             self._dev_data = yaml.load(read_file)
-        # Load the device communication configured protocol.
-        self._comm_protocol = self._dev_data['communications']['Protocol']
-        # If the protocol is 'TCP/IP', prepare a network socket.
-        if self._comm_protocol == "TCP/IP":
-            self._client = socket.socket(family=socket.AF_INET,
-                                         type=socket.SOCK_STREAM)
-            self._client.settimeout(self._timeout)
-
-    def send_command(self, command, arg=""):
-        """
-        Send a command with an optional argument and return response.
-
-        The client will read the response message until a limit of 100
-        characters are read or a timeout exception raises (which
-        indicates that the server is not returning more values).
-        """
-        if not self._connected:
-            self.logger.warn("Device not connected")
-            return
-        cmd = self._COMMANDS[command]
-        if arg:
-            cmd = "{} {}".format(cmd, arg)
-        message = ""
-        self.logger.debug("Sending '{}' to server".format(cmd))
-        self._client.send(str.encode(cmd))
-        # Read back the answer from the server.
-        try:
-            message = self._client.recv(100)
-        except socket.timeout:
-            pass
-        self.logger.debug("Received '{}'".format(message))
-        return message
+        # Communication
+        self.__client = clientprotocol.Client.get_client(
+                self._dev_data['communications'])
+        self.__connected = False
 
     def connect(self):
         """
-        Try to connect to the device. Return True if sucessfull.
+        Try to connect to the device. Return True if successful.
 
         Depending on the selected communications protocol, the procedure
         varies considerably.
 
         NOTE: The only validated protocol is TCP/IP.
         """
-        if self._comm_protocol == "TCP/IP":
-            ip = self._dev_data['communications']['Properties']['CommProp1']
-            port = int(self._dev_data['communications']['Properties']
-                                     ['CommProp2'])
-            # If the connection fails, a new socket has to be created. This is
-            # not the best solution. It is used to avoid BlockingIOError after
-            # the first try. Other library like 'select' should be used.
-            self.logger.debug("Conecting to IP {} and port {}".format(ip, port))
-            self._client = socket.socket(family=socket.AF_INET,
-                                         type=socket.SOCK_STREAM)
-            self._client.settimeout(self._timeout)
-            try:
-                self._client.connect((ip, port))
-            except (socket.timeout, ConnectionRefusedError) as error:
-                self._client.close()
-                self._connected = False
-                self._ack = False
-                connection_error = error
-            else:
-                self._connected = True
-                connection_error = ""
-        else:
-            self._connected = False
-            self._ack = False
-            connection_error = "Unknown protocol"
-            self.logger.warn("Unable to work with specified protocol '{}'"
-                        "".format(self._comm_protocol))
-        return (self._connected, connection_error)
-
-    def connect_and_ack(self):
-        """
-        Open the socket connection and if succesfull, send an ACK.
-        """
-        # Try to connect and to get an acknowledge.
-        connected, error = self.connect()
-        ack = self.acknowledge()
-        dev_name = self._dev_data['general']['Name']
-        # Evaluate the connection state and send to logger information
-        if connected and ack:
-            self.logger.info("{}: Established connection to target "
-                             "device".format(dev_name))
-        elif connected and not ack:
-            self.logger.warn("{}: Established connection to target device,"
-                             " but no ACK received".format(dev_name))
-        else:
-            self.logger.warn("{}: Unable to connect to device. {}."
-                            "".format(dev_name, error))
-        return (self._connected, self._ack)
+        self.__connected = self.__client.connect()
+        return self.__connected
 
     def disconnect(self):
         """Disconnect from the device server."""
-        if self._comm_protocol == "TCP/IP":
-            if self._connected:
-                self._client.send(b"EXIT")
-                self._client.close()
-                self.logger.info("{}: Closed the TCP/IP client."
-                            "".format(self._dev_data['general']['Name']))
-                self._connected = False
-            else:
-                self.logger.warn("{}: Unable to close TCP/IP client. Already"
-                        " closed".format(self._dev_data['general']['Name']))
-        return self._connected
+        self.__connected = not self.__client.disconnect()
+        return self.__connected
 
-    def acknowledge(self):
-        """
-        Send the ACK command for checking if the device is correct.
-
-        This is used to check that the client has been connected to the
-        correct server, which implements the same communications
-        protocol.
-        """
-        if not self._connected:
-            return
-        message = self.send_command("ack")
-        if message != "":
-            self._ack = True
+    def _send(self, cmd, read=False):
+        success = self.__client.write(cmd)
+        if success and read:
+            return self.__client.read()
         else:
-            self._ack = False
-        return self._ack
+            return success, ""
 
     def is_connected(self):
         """Return the state of the connection."""
-        return self._connected
+        return self.__connected
 
-    def is_ack(self):
-        """Return the state of the acknowledge."""
-        return self._ack
+    def is_ready(self):
+        success, _ = self.idn()
+        return success
+
+    def idn(self):
+        return self._send("*IDN?", True)
+
+    def reset(self):
+        return self._send("*RST")
+
+    @abc.abstractmethod
+    def start_measurement(self, sample_time, channel):
+        return
+
+    @abc.abstractmethod
+    def fetch_freq(self):
+        return
+
+
+class UviFreqMeter(FreqMeter):
+    def start_measurement(self, sample_time, channel):
+        self.reset()
+        self._send("SENS:MODE:SAVELAST", True)
+        self._send("SENS:FREQ:ALL:ARM:TIM {}".format(sample_time), True)
+        self._send("INIT", True)
+
+    def fetch_freq(self):
+        success, reply = self._send("FETCH:FREQ:ALL", True)
+        if not success:
+            self.logger.error("Couldn't fetch frequency")
+            return
+        values = reply.decode().split(",")
+        return {
+            "coarse": float(values[0]),
+            "fine": float(values[1]),
+            "fineCDT": float(values[2]),
+        }
+
+    def cdt_start(self, gate_time, number_of_measurements):
+        self._send("CDT:ARM:TIM {},{}".format(gate_time,
+                                              number_of_measurements),
+                   True)
+
+    def cdt_end(self):
+        success, reply = self._send("CDT:END?")
+        if not success:
+            return None
+
+        status = {
+            "end": False,
+            "error": False,
+            "time_left": {
+                "minutes": 0,
+                "seconds": 0,
+            },
+        }
+        if reply == "YES":
+            status["end"] = True
+        elif reply == "ERROR":
+            status["error"] = True
+        elif reply == "NOTSTARTED":
+            pass
+        else:
+            time_values = reply.split(" ")[1]
+            time_values = time_values.split(",")
+            status["time_left"]["minutes"] = int(time_values[0])
+            status["time_left"]["seconds"] = int(time_values[1])
+        return status
+
+    def cdt_get_values(self):
+        values = {}
+        success, reply = self._send("CDT:CDT?", True)
+        if success:
+            values["cdt"] = float(reply)
+        success, reply = self._send("CDT:DNL?", True)
+        if success:
+            values["dnl"] = float(reply)
+        success, reply = self._send("CDT:INL?", True)
+        if success:
+            values["inl"] = float(reply)
+        return values
+
+
+class AgilentFreqMeter(FreqMeter):
+    def start_measurement(self, sample_time, channel):
+        self.reset()
+        self._send("*CLS")
+        self._send("*SRE 0")
+        self._send("*ESE 0")
+        self._send(":STAT:PRES")
+        self._send(":FREQ:ARM:STAR:SOUR IMM")
+        self._send(":FREQ:ARM:STOP:SOUR TIM")
+        self._send(":FREQ:ARM:STOP:TIM {}".format(sample_time))
+        self._send(":FUNC 'FREQ {}".format(channel))
+        self._send("INIT")
+
+    def fetch_freq(self):
+        success, reply = self._send("READ:FREQ?", True)
+        if not success:
+            self.logger.error("Couldn't fetch frequency")
+            return
+        return {
+            "coarse": float(reply),
+        }
