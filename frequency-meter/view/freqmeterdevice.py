@@ -94,6 +94,49 @@ class UviFreqMeter(FreqMeter):
             "fineCDT": float(values[2]),
         }
 
+    def cdt_start(self, gate_time, number_of_measurements):
+        self._send("CDT:ARM:TIM {},{}".format(gate_time,
+                                              number_of_measurements),
+                   True)
+
+    def cdt_end(self):
+        success, reply = self._send("CDT:END?")
+        if not success:
+            return None
+
+        status = {
+            "end": False,
+            "error": False,
+            "time_left": {
+                "minutes": 0,
+                "seconds": 0,
+            },
+        }
+        if reply == "YES":
+            status["end"] = True
+        elif reply == "ERROR":
+            status["error"] = True
+        elif reply == "NOTSTARTED":
+            pass
+        else:
+            values = reply.split(" ")
+            status["time_left"]["minutes"] = int(values[1])
+            status["time_left"]["seconds"] = int(values[2])
+        return status
+
+    def cdt_get_values(self):
+        values = {}
+        success, reply = self._send("CDT:CDT?", True)
+        if success:
+            values["cdt"] = float(reply)
+        success, reply = self._send("CDT:DNL?", True)
+        if success:
+            values["dnl"] = float(reply)
+        success, reply = self._send("CDT:INL?", True)
+        if success:
+            values["inl"] = float(reply)
+        return values
+
 
 class AgilentFreqMeter(FreqMeter):
     def start_measurement(self, sample_time, channel):
