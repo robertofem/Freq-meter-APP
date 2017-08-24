@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'view/resources/device_interface.ui'
+# Form implementation generated from reading ui file 'frequency-meter/view/resources/device_interface.ui'
 #
 # Created by: PyQt5 UI code generator 5.9
 #
@@ -51,9 +51,6 @@ class Ui_DevManagerWindow(object):
         self.DevNameText = QtWidgets.QLineEdit(self.GeneralPropertiesgroupBox)
         self.DevNameText.setObjectName("DevNameText")
         self.gridLayout_2.addWidget(self.DevNameText, 0, 1, 1, 1)
-        self.DevVendorText = QtWidgets.QLineEdit(self.GeneralPropertiesgroupBox)
-        self.DevVendorText.setObjectName("DevVendorText")
-        self.gridLayout_2.addWidget(self.DevVendorText, 1, 1, 1, 1)
         self.DevModelText = QtWidgets.QLineEdit(self.GeneralPropertiesgroupBox)
         self.DevModelText.setObjectName("DevModelText")
         self.gridLayout_2.addWidget(self.DevModelText, 2, 1, 1, 1)
@@ -63,6 +60,13 @@ class Ui_DevManagerWindow(object):
         self.DevFirmVersionText = QtWidgets.QLineEdit(self.GeneralPropertiesgroupBox)
         self.DevFirmVersionText.setObjectName("DevFirmVersionText")
         self.gridLayout_2.addWidget(self.DevFirmVersionText, 4, 1, 1, 1)
+        self.VendorSelector = QtWidgets.QComboBox(self.GeneralPropertiesgroupBox)
+        self.VendorSelector.setObjectName("VendorSelector")
+        self.VendorSelector.addItem("")
+        self.VendorSelector.setItemText(0, "")
+        self.VendorSelector.addItem("")
+        self.VendorSelector.addItem("")
+        self.gridLayout_2.addWidget(self.VendorSelector, 1, 1, 1, 1)
         self.gridLayout.addWidget(self.GeneralPropertiesgroupBox, 1, 0, 3, 1)
         self.groupBox = QtWidgets.QGroupBox(DevManagerWindow)
         self.groupBox.setObjectName("groupBox")
@@ -226,6 +230,8 @@ class Ui_DevManagerWindow(object):
         self.label_4.setText(_translate("DevManagerWindow", "Serial Nº:"))
         self.label_7.setText(_translate("DevManagerWindow", "Firmware version:"))
         self.label.setText(_translate("DevManagerWindow", "Name:"))
+        self.VendorSelector.setItemText(1, _translate("DevManagerWindow", "UVigo"))
+        self.VendorSelector.setItemText(2, _translate("DevManagerWindow", "Agilent"))
         self.groupBox.setTitle(_translate("DevManagerWindow", "Chanels properties"))
         self.label_6.setText(_translate("DevManagerWindow", "Signals per ch.: "))
         self.label_5.setText(_translate("DevManagerWindow", "Nº of channels:"))

@@ -181,7 +181,8 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         else:
             logger.warning("There are 2 devices already loaded!")
             return
-        self.devices[dev-1] = freqmeterdevice.UviFreqMeter(dev_path, logger)
+        self.devices[dev-1] = freqmeterdevice.FreqMeter.get_freq_meter(dev_path,
+                                                                       logger)
         logger.info("Loaded the device {dev}".format(dev=device_name))
         # Measurement area items set-up
         self.device_scrollareas[dev-1].setVisible(True)
@@ -291,7 +292,8 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         # Sample values for X and Y axis
         sample_time = self.SampleTimeBox.value()
         # Reset and configure FPGA, and initialize acquisition.
-        answer = self.devices[0].start_measurement(sample_time)
+        # FIXME [floonone-20170824] Channel
+        answer = self.devices[0].start_measurement(sample_time, 1)
         # Set timer (in milliseconds) and seconds counter
         self.timer.start(sample_time * 1000)
         logger.debug("Start sampling every {} seconds".format(sample_time))

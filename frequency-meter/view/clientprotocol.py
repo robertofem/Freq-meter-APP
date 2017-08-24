@@ -7,11 +7,12 @@ import visa
 
 class Client(abc.ABC):
     @staticmethod
-    def get_client(protocol, properties):
-        if protocol == "TCP":
-            return TCPClient(properties["ip"], properties["port"])
-        elif protocol == "Visa":
-            return VisaClient(properties["address"])
+    def get_client(communications):
+        if communications["Protocol"] == "TCP/IP":
+            return TCPIPClient(communications["Properties"]['CommProp1'],
+                               communications["Properties"]['CommProp2'])
+        elif communications["Protocol"] == "VISA":
+            return VISAClient(communications["Properties"]['CommProp1'])
         else:
             return None
 
@@ -24,20 +25,25 @@ class Client(abc.ABC):
         return False
 
     @abc.abstractmethod
-    def send(self, cmd):
-        return False, ""
+    def write(self, cmd):
+        return False
+
+    def read(self):
+        return ""
 
 
-class TCPClient(Client):
+class TCPIPClient(Client):
+    TIMEOUT = 0.2
+
     def __init__(self, ip, port):
         self.__ip = ip
-        self.__port = port
+        self.__port = int(port)
         self.__socket = None
 
     def connect(self):
         self.__socket = socket.socket(family=socket.AF_INET,
                                       type=socket.SOCK_STREAM)
-        self.__socket.settimeout(0.2)
+        self.__socket.settimeout(self.TIMEOUT)
         try:
             self.__socket.connect((self.__ip, self.__port))
         except (socket.timeout, ConnectionRefusedError) as error:
@@ -54,21 +60,27 @@ class TCPClient(Client):
             self.__socket = None
         return True
 
-    def send(self, command):
+    def write(self, command):
+        if not self.__socket:
+            return False
+        self.__socket.send(str.encode(command))
+        return True
+
+    def read(self):
         if not self.__socket:
             return False, ""
-        self.__socket.send(str.encode(command))
         # Read back the answer from the server.
         try:
             reply = self.__socket.recv(100)
-            success = True
         except socket.timeout:
             reply = ""
             success = False
+        else:
+            success = True
         return success, reply
 
 
-class VisaClient(Client):
+class VISAClient(Client):
     def __init__(self, address):
         self.__address = address
         self.__resource = None
@@ -76,11 +88,16 @@ class VisaClient(Client):
     def connect(self):
         rm = visa.ResourceManager("@py")
         self.__resource = rm.open_resource(self.__address)
+        return True
 
     def disconnect(self):
         self.__resource.close()
         self.__resource = None
+        return True
 
-    def send(self, command):
+    def write(self, command):
         self.__resource.write(command)
-        return self.__resource.read()
+        return True
+
+    def read(self):
+        return True, self.__resource.read()

@@ -80,9 +80,6 @@
       <item row="0" column="1">
        <widget class="QLineEdit" name="DevNameText"/>
       </item>
-      <item row="1" column="1">
-       <widget class="QLineEdit" name="DevVendorText"/>
-      </item>
       <item row="2" column="1">
        <widget class="QLineEdit" name="DevModelText"/>
       </item>
@@ -91,6 +88,25 @@
       </item>
       <item row="4" column="1">
        <widget class="QLineEdit" name="DevFirmVersionText"/>
+      </item>
+      <item row="1" column="1">
+       <widget class="QComboBox" name="VendorSelector">
+        <item>
+         <property name="text">
+          <string/>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>UVigo</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Agilent</string>
+         </property>
+        </item>
+       </widget>
       </item>
      </layout>
     </widget>

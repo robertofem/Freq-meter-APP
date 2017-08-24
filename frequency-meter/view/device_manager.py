@@ -44,9 +44,9 @@ class DevManagerWindow(QtWidgets.QDialog, device_interface.Ui_DevManagerWindow):
         Ask the user if he/she wants to exit the DevManager window.
         """
         reply = QtWidgets.QMessageBox.question(self, 'Exit message',
-                                           "Do you want to exit?", 
-                                           QtWidgets.QMessageBox.Yes,
-                                           QtWidgets.QMessageBox.No)
+                                               "Do you want to exit?",
+                                               QtWidgets.QMessageBox.Yes,
+                                               QtWidgets.QMessageBox.No)
         if reply == QtWidgets.QMessageBox.Yes:
             self.close()
         return
@@ -73,7 +73,8 @@ class DevManagerWindow(QtWidgets.QDialog, device_interface.Ui_DevManagerWindow):
                 return
         # Load general properties to interface.
         self.DevNameText.setText(dev_data['general']['Name'])
-        self.DevVendorText.setText(dev_data['general']['Vendor'])
+        v_index = self.VendorSelector.findText(dev_data['Vendor'])
+        self.VendorSelector.setCurrentIndex(v_index)
         self.DevModelText.setText(dev_data['general']['Model'])
         self.DevSerialNText.setText(dev_data['general']['Serial_N'])
         self.DevFirmVersionText.setText(dev_data['general']['FirmVersion'])
@@ -93,16 +94,17 @@ class DevManagerWindow(QtWidgets.QDialog, device_interface.Ui_DevManagerWindow):
                                                         ['Protocol'])
         self.CommProtocolBox.setCurrentIndex(c_index)
         self.CommText_1.setText(dev_data['communications']
-                                           ['Properties']['CommProp1'])
+                                        ['Properties']['CommProp1'])
         self.CommText_2.setText(dev_data['communications']
-                                           ['Properties']['CommProp2'])
+                                        ['Properties']['CommProp2'])
         self.CommText_3.setText(dev_data['communications']
-                                           ['Properties']['CommProp3'])
+                                        ['Properties']['CommProp3'])
         self.CommText_4.setText(dev_data['communications']
-                                           ['Properties']['CommProp4'])
+                                        ['Properties']['CommProp4'])
         # Load impedance properties to interface.
-        self.Ohm50checkBox.setChecked(dev_data['impedance']['R50Ohm']=='True')
-        self.MegaOhmcheckBox.setChecked(dev_data['impedance']['R1MOhm']=='True')
+        self.Ohm50checkBox.setChecked(dev_data['impedance']['R50Ohm'] == 'True')
+        self.MegaOhmcheckBox.setChecked(dev_data['impedance']['R1MOhm']
+                                        == 'True')
         return
 
     def save_device(self):
@@ -117,16 +119,16 @@ class DevManagerWindow(QtWidgets.QDialog, device_interface.Ui_DevManagerWindow):
         elif (not self.Ohm50checkBox.isChecked()
                 and not self.MegaOhmcheckBox.isChecked()):
             err_text = ("<font color='red'>At least one impedance"
-                       " must be selected!</font>")
+                        " must be selected!</font>")
             self.ErrorLabel.setText(err_text)
             return
         # Check if the device already exists and ask user for overwriting it.
         elif glob.glob("resources/devices/{}.yml".format(dev_name)):
             question = ("It already exists a device configuration with the name"
-                    " {}. Do you want to overwrite it?".format(dev_name)) 
+                        " {}. Do you want to overwrite it?".format(dev_name))
             reply = QtWidgets.QMessageBox.question(self, 'Message', question,
-                                               QtWidgets.QMessageBox.Yes,
-                                               QtWidgets.QMessageBox.No)
+                                                   QtWidgets.QMessageBox.Yes,
+                                                   QtWidgets.QMessageBox.No)
             err_text = ""
             self.ErrorLabel.setText(err_text)
             if reply == QtWidgets.QMessageBox.No:
@@ -136,35 +138,35 @@ class DevManagerWindow(QtWidgets.QDialog, device_interface.Ui_DevManagerWindow):
         self.ErrorLabel.setText(err_text)
         # Construct a dictionary with the whole form information.
         dev_data = dict(
-            general = dict(
-                Name = str(self.DevNameText.text()),
-                Vendor = str(self.DevVendorText.text()),
-                Model = str(self.DevModelText.text()),
-                Serial_N = str(self.DevSerialNText.text()),
-                FirmVersion = str(self.DevFirmVersionText.text()),
+            general=dict(
+                Name=str(self.DevNameText.text()),
+                Vendor=str(self.VendorSelector.currentText()),
+                Model=str(self.DevModelText.text()),
+                Serial_N=str(self.DevSerialNText.text()),
+                FirmVersion=str(self.DevFirmVersionText.text()),
                 ),
-            communications = dict(
-                Protocol = str(self.CommProtocolBox.currentText()),
-                Properties = dict(
-                    CommProp1 = str(self.CommText_1.text()),
-                    CommProp2 = str(self.CommText_2.text()),
-                    CommProp3 = str(self.CommText_3.text()),
-                    CommProp4 = str(self.CommText_4.text()),
+            communications=dict(
+                Protocol=str(self.CommProtocolBox.currentText()),
+                Properties=dict(
+                    CommProp1=str(self.CommText_1.text()),
+                    CommProp2=str(self.CommText_2.text()),
+                    CommProp3=str(self.CommText_3.text()),
+                    CommProp4=str(self.CommText_4.text()),
                     ),
                 ),
-            channels = dict(
-                Quantity = str(self.NChannelsBox.value()),
-                Signals = str(self.NSignalsBox.value()),
-                SigTypes = dict(
-                    S1 = str(self.S1comboBox.currentText()),
-                    S2 = str(self.S2comboBox.currentText()),
-                    S3 = str(self.S3comboBox.currentText()),
-                    S4 = str(self.S4comboBox.currentText()),
+            channels=dict(
+                Quantity=str(self.NChannelsBox.value()),
+                Signals=str(self.NSignalsBox.value()),
+                SigTypes=dict(
+                    S1=str(self.S1comboBox.currentText()),
+                    S2=str(self.S2comboBox.currentText()),
+                    S3=str(self.S3comboBox.currentText()),
+                    S4=str(self.S4comboBox.currentText()),
                     ),
                 ),
-            impedance = dict(
-                R50Ohm = str(self.Ohm50checkBox.isChecked()),
-                R1MOhm = str(self.MegaOhmcheckBox.isChecked()),
+            impedance=dict(
+                R50Ohm=str(self.Ohm50checkBox.isChecked()),
+                R1MOhm=str(self.MegaOhmcheckBox.isChecked()),
                 ),
             )
         # If the file already exists, remove and create it again with the
