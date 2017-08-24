@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # Standard libraries
 import abc
-import socket
 import yaml
 from view import clientprotocol
 
@@ -13,9 +12,13 @@ class FreqMeter(abc.ABC):
         with open(dev_path, 'r') as read_file:
             self._dev_data = yaml.load(read_file)
         # Communication
-        ip = self._dev_data['communications']['Properties']['CommProp1']
-        port = int(self._dev_data['communications']['Properties']['CommProp2'])
-        self.__client = clientprotocol.TCPClient(ip, port)
+        client_properties = {
+            "ip": self._dev_data['communications']['Properties']['CommProp1'],
+            "port": int(self._dev_data['communications']['Properties']
+                        ['CommProp2']),
+        }
+        self.__client = clientprotocol.Client.get_client("TCP",
+                                                         client_properties)
         self.__connected = False
         # Load the device communication configured protocol.
         self._comm_protocol = self._dev_data['communications']['Protocol']

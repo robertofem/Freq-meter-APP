@@ -6,6 +6,15 @@ import visa
 
 
 class Client(abc.ABC):
+    @staticmethod
+    def get_client(protocol, properties):
+        if protocol == "TCP":
+            return TCPClient(properties["ip"], properties["port"])
+        elif protocol == "Visa":
+            return VisaClient(properties["address"])
+        else:
+            return None
+
     @abc.abstractmethod
     def connect(self):
         return False
@@ -28,7 +37,7 @@ class TCPClient(Client):
     def connect(self):
         self.__socket = socket.socket(family=socket.AF_INET,
                                       type=socket.SOCK_STREAM)
-        self.__socket.settimeout(2)
+        self.__socket.settimeout(0.2)
         try:
             self.__socket.connect((self.__ip, self.__port))
         except (socket.timeout, ConnectionRefusedError) as error:
