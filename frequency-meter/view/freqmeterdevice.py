@@ -119,9 +119,10 @@ class UviFreqMeter(FreqMeter):
         elif reply == "NOTSTARTED":
             pass
         else:
-            values = reply.split(" ")
-            status["time_left"]["minutes"] = int(values[1])
-            status["time_left"]["seconds"] = int(values[2])
+            time_values = reply.split(" ")[1]
+            time_values = time_values.split(",")
+            status["time_left"]["minutes"] = int(time_values[0])
+            status["time_left"]["seconds"] = int(time_values[1])
         return status
 
     def cdt_get_values(self):
