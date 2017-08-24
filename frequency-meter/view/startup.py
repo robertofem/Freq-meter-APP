@@ -239,7 +239,7 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
                         "<font color='red'>not connected</font>")
         else:
             # Try a connection and update status label and connect button text.
-            connected, _ = self.devices[dev-1].connect()
+            connected = self.devices[dev-1].connect()
             if connected:
                 ready = self.devices[dev - 1].is_ready()
                 if ready:
