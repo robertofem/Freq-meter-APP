@@ -15,7 +15,7 @@ class FreqMeter(abc.ABC):
         # Communication
         ip = self._dev_data['communications']['Properties']['CommProp1']
         port = int(self._dev_data['communications']['Properties']['CommProp2'])
-        self.__client = clientprotocol.TCP(ip, port)
+        self.__client = clientprotocol.TCPClient(ip, port)
         self.__connected = False
         # Load the device communication configured protocol.
         self._comm_protocol = self._dev_data['communications']['Protocol']

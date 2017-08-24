@@ -1,6 +1,8 @@
 # Standard libraries
 import abc
 import socket
+# Third party libraries
+import visa
 
 
 class Client(abc.ABC):
@@ -17,7 +19,7 @@ class Client(abc.ABC):
         return False, ""
 
 
-class TCP(Client):
+class TCPClient(Client):
     def __init__(self, ip, port):
         self.__ip = ip
         self.__port = port
@@ -55,3 +57,21 @@ class TCP(Client):
             reply = ""
             success = False
         return success, reply
+
+
+class VisaClient(Client):
+    def __init__(self, address):
+        self.__address = address
+        self.__resource = None
+
+    def connect(self):
+        rm = visa.ResourceManager("@py")
+        self.__resource = rm.open_resource(self.__address)
+
+    def disconnect(self):
+        self.__resource.close()
+        self.__resource = None
+
+    def send(self, command):
+        self.__resource.write(command)
+        return self.__resource.read()
