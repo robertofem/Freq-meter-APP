@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>714</width>
-    <height>518</height>
+    <height>527</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -104,6 +104,11 @@
         <item>
          <property name="text">
           <string>Agilent</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Test</string>
          </property>
         </item>
        </widget>
@@ -405,6 +410,11 @@
         <item>
          <property name="text">
           <string>VISA</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Test</string>
          </property>
         </item>
        </widget>

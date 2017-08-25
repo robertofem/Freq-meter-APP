@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'frequency-meter/view/resources/device_interface.ui'
+# Form implementation generated from reading ui file 'view/resources/device_interface.ui'
 #
 # Created by: PyQt5 UI code generator 5.9
 #
@@ -11,7 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_DevManagerWindow(object):
     def setupUi(self, DevManagerWindow):
         DevManagerWindow.setObjectName("DevManagerWindow")
-        DevManagerWindow.resize(714, 518)
+        DevManagerWindow.resize(714, 527)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -64,6 +64,7 @@ class Ui_DevManagerWindow(object):
         self.VendorSelector.setObjectName("VendorSelector")
         self.VendorSelector.addItem("")
         self.VendorSelector.setItemText(0, "")
+        self.VendorSelector.addItem("")
         self.VendorSelector.addItem("")
         self.VendorSelector.addItem("")
         self.gridLayout_2.addWidget(self.VendorSelector, 1, 1, 1, 1)
@@ -176,6 +177,7 @@ class Ui_DevManagerWindow(object):
         self.CommProtocolBox.addItem("")
         self.CommProtocolBox.addItem("")
         self.CommProtocolBox.addItem("")
+        self.CommProtocolBox.addItem("")
         self.gridLayout_4.addWidget(self.CommProtocolBox, 0, 1, 1, 1)
         self.gridLayout.addWidget(self.CommSettingsgroupBox_2, 1, 2, 1, 1)
         self.CommPropertiesgroupBox = QtWidgets.QGroupBox(DevManagerWindow)
@@ -232,6 +234,7 @@ class Ui_DevManagerWindow(object):
         self.label.setText(_translate("DevManagerWindow", "Name:"))
         self.VendorSelector.setItemText(1, _translate("DevManagerWindow", "UVigo"))
         self.VendorSelector.setItemText(2, _translate("DevManagerWindow", "Agilent"))
+        self.VendorSelector.setItemText(3, _translate("DevManagerWindow", "Test"))
         self.groupBox.setTitle(_translate("DevManagerWindow", "Chanels properties"))
         self.label_6.setText(_translate("DevManagerWindow", "Signals per ch.: "))
         self.label_5.setText(_translate("DevManagerWindow", "Nº of channels:"))
@@ -266,9 +269,20 @@ class Ui_DevManagerWindow(object):
         self.CommProtocolBox.setItemText(2, _translate("DevManagerWindow", "Serial"))
         self.CommProtocolBox.setItemText(3, _translate("DevManagerWindow", "USB"))
         self.CommProtocolBox.setItemText(4, _translate("DevManagerWindow", "VISA"))
+        self.CommProtocolBox.setItemText(5, _translate("DevManagerWindow", "Test"))
         self.CommPropertiesgroupBox.setTitle(_translate("DevManagerWindow", "Communication properties"))
         self.CommLabel_1.setText(_translate("DevManagerWindow", "Prop1:"))
         self.CommLabel_2.setText(_translate("DevManagerWindow", "Prop2:"))
         self.CommLabel_3.setText(_translate("DevManagerWindow", "Prop3:"))
         self.CommLabel_4.setText(_translate("DevManagerWindow", "Prop4:"))
+
+
+if __name__ == "__main__":
+    import sys
+    app = QtWidgets.QApplication(sys.argv)
+    DevManagerWindow = QtWidgets.QDialog()
+    ui = Ui_DevManagerWindow()
+    ui.setupUi(DevManagerWindow)
+    DevManagerWindow.show()
+    sys.exit(app.exec_())
 

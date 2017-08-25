@@ -265,6 +265,20 @@ class DevManagerWindow(QtWidgets.QDialog, device_interface.Ui_DevManagerWindow):
             # Property 4 settings.
             self.CommLabel_4.setVisible(False)
             self.CommText_4.setVisible(False)
+        elif self.CommProtocolBox.currentText() == "Test":
+            self.CommPropertiesgroupBox.setVisible(False)
+            # Property 1 settings.
+            self.CommLabel_1.setVisible(False)
+            self.CommText_1.setVisible(False)
+            # Property 2 settings.
+            self.CommLabel_2.setVisible(False)
+            self.CommText_2.setVisible(False)
+            # Property 3 settings.
+            self.CommLabel_3.setVisible(False)
+            self.CommText_3.setVisible(False)
+            # Property 4 settings.
+            self.CommLabel_4.setVisible(False)
+            self.CommText_4.setVisible(False)
         else:
             self.CommPropertiesgroupBox.setVisible(False)
         return

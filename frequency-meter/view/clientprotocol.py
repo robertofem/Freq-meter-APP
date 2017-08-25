@@ -13,6 +13,8 @@ class Client(abc.ABC):
                                communications["Properties"]['CommProp2'])
         elif communications["Protocol"] == "VISA":
             return VISAClient(communications["Properties"]['CommProp1'])
+        elif communications["Protocol"] == "Test":
+            return TestClient()
         else:
             return None
 
@@ -28,6 +30,7 @@ class Client(abc.ABC):
     def write(self, cmd):
         return False
 
+    @abc.abstractmethod
     def read(self):
         return ""
 
@@ -101,3 +104,19 @@ class VISAClient(Client):
 
     def read(self):
         return True, self.__resource.read()
+
+class TestClient(Client):
+    def __init__(self):
+        return
+
+    def connect(self):
+        return True
+
+    def disconnect(self):
+        return True
+
+    def write(self, command):
+        return True
+
+    def read(self):
+        return True, 0.0

@@ -3,7 +3,8 @@
 import abc
 import yaml
 from view import clientprotocol
-
+# library for TestFreqMeter only
+import random
 
 class FreqMeter(abc.ABC):
     @staticmethod
@@ -15,6 +16,8 @@ class FreqMeter(abc.ABC):
             return UviFreqMeter(dev_path, logger)
         elif vendor == "Agilent":
             return AgilentFreqMeter(dev_path, logger)
+        elif vendor == "Test":
+            return TestFreqMeter(dev_path, logger)
         else:
             return None
 
@@ -167,4 +170,22 @@ class AgilentFreqMeter(FreqMeter):
             return
         return {
             self.sig_types['S1']: float(reply),
+        }
+
+class TestFreqMeter(FreqMeter):
+    n_channels = 2
+    n_signals = 3
+    sig_types = {'S1': 'coarse', 'S2': 'fine', 'S3': 'fineCDT'}
+
+    def start_measurement(self, sample_time, channel):
+        return
+
+    def fetch_freq(self):
+        values = []
+        for index in range(3):
+            values.append(random.gauss(10, 1+index))
+        return {
+            self.sig_types['S1']: float(values[0]),
+            self.sig_types['S2']: float(values[1]),
+            self.sig_types['S3']: float(values[2]),
         }
