@@ -93,9 +93,9 @@ class UviFreqMeter(FreqMeter):
             return
         values = reply.decode().split(",")
         return {
-            "coarse": float(values[0]),
-            "fine": float(values[1]),
-            "fineCDT": float(values[2]),
+            self.sig_types['S1']: float(values[0]),
+            self.sig_types['S2']: float(values[1]),
+            self.sig_types['S3']: float(values[2]),
         }
 
     def cdt_start(self, gate_time, number_of_measurements):
@@ -166,5 +166,5 @@ class AgilentFreqMeter(FreqMeter):
             self.logger.error("Couldn't fetch frequency")
             return
         return {
-            "coarse": float(reply),
+            self.sig_types['S1']: float(reply),
         }
