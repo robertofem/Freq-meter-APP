@@ -1,0 +1,24 @@
+channels:
+  Quantity: '2'
+  SigTypes:
+    S1: Coarse
+    S2: Fine
+    S3: Fine-CDT
+    S4: <None>
+  Signals: '3'
+communications:
+  Properties:
+    CommProp1: ''
+    CommProp2: ''
+    CommProp3: ''
+    CommProp4: ''
+  Protocol: Test
+general:
+  FirmVersion: ''
+  Model: ''
+  Name: Test-device1
+  Serial_N: ''
+  Vendor: Test
+impedance:
+  R1MOhm: 'True'
+  R50Ohm: 'False'
