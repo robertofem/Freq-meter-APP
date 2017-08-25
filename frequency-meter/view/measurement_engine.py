@@ -75,7 +75,6 @@ class MeasurementEngine():
         Retrieve measurements the measurement engine. Values in the queue
         unsent_values are given as return. unsent_values is cleared.
         """
-        print(self.unsent_values[0].channel[0].signal)
         #deepcopy is used to copy lists containing objects
         return_values = copy.deepcopy(self.unsent_values)
         for unsent in self.unsent_values:

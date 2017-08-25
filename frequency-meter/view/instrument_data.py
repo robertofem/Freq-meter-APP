@@ -52,7 +52,6 @@ class ChannelData():
         """
         for sigtype, values in self.signal.items():
             values.append(signals_to_append.signal[sigtype])
-            print(self.signal)
         return
 
     def append_sample(self, measuremnt):
@@ -63,7 +62,6 @@ class ChannelData():
         """
         for sigtype, values in self.signal.items():
             values.append(measuremnt[sigtype])
-            print(self.signal)
         return
 
     def clear(self):

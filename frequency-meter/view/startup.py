@@ -345,12 +345,13 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
             # Remove exponential notation in y axis
             self.ax.get_yaxis().get_major_formatter().set_useOffset(False)
 
-            #for each signal of each channel of each device
+            #For each device
             for dev in range(len(self.dev_measure)):
+                # Append new measurements to data historic
+                self.data[dev].append(new_samples[dev])
+                #For each signal in each channel
                 for ch in range(1):
                     for sig in range (self.dev_measure[dev].n_signals):
-                        # Append new measurements to data historic
-                        self.data[dev].append(new_samples[dev])
                         #if the corresponding checkbox is checked then plot
                         sig_key = "S{}".format(sig+1)
                         sig_type = self.dev_measure[dev].sig_types[sig_key]
