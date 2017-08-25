@@ -76,6 +76,10 @@ class FreqMeter(abc.ABC):
 
 
 class UviFreqMeter(FreqMeter):
+    n_channels = 1
+    n_signals = 3
+    sig_types = {'S1': 'coarse', 'S2': 'fine', 'S3': 'fineCDT'}
+
     def start_measurement(self, sample_time, channel):
         self.reset()
         self._send("SENS:MODE:SAVELAST", True)
@@ -140,6 +144,10 @@ class UviFreqMeter(FreqMeter):
 
 
 class AgilentFreqMeter(FreqMeter):
+    n_channels = 2
+    n_signals = 1
+    sig_types = {'S1': 'fineCDT'}
+
     def start_measurement(self, sample_time, channel):
         self.reset()
         self._send("*CLS")
@@ -149,7 +157,7 @@ class AgilentFreqMeter(FreqMeter):
         self._send(":FREQ:ARM:STAR:SOUR IMM")
         self._send(":FREQ:ARM:STOP:SOUR TIM")
         self._send(":FREQ:ARM:STOP:TIM {}".format(sample_time))
-        self._send(":FUNC 'FREQ {}".format(channel))
+        self._send(":FUNC 'FREQ {}".format(channel+1))
         self._send("INIT")
 
     def fetch_freq(self):

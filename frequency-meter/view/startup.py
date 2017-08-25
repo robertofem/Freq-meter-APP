@@ -16,6 +16,8 @@ from PyQt5 import QtGui, QtCore, QtWidgets
 from view import device_manager
 from view import calibration
 from view import freqmeterdevice
+from view import measurement_engine
+from view import instrument_data
 from view import interface
 # library for testing
 import random
@@ -150,7 +152,8 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         self.ax.set_ylabel("F(Hz)", rotation= 'horizontal')
         self.ax.yaxis.set_label_coords(-0.05, 1.04)
         # Plot data
-        self.data = {'1': [], '2': []}
+        self.data = [] #its a list of InstrumentData
+        self.m_engine = measurement_engine.MeasurementEngine(logger)
         self.signals = [[], []]
         self.cboxes = [[], []]
         # Plotting initialization counter
@@ -187,6 +190,10 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
             return
         self.devices[dev-1] = freqmeterdevice.FreqMeter.get_freq_meter(dev_path,
                                                                        logger)
+
+        if self.devices[0] is None:
+            logger.debug("self.device[0] is None")
+
         logger.info("Loaded the device {dev}".format(dev=device_name))
         # Measurement area items set-up
         self.device_scrollareas[dev-1].setVisible(True)
@@ -292,54 +299,65 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         return
 
     def start_plot(self):
-        if self.devices[0] is None:
-            logger.warning("Any device was loaded on the first slot")
-            return
-        elif not self.devices[0].is_connected():
-            logger.warning("The device is not connected")
-            return
-        # Delete the previous data values
-        self.data['1'][0]['S1'] = []
+        #check which devices will be loaded and connected
+        #they will be used to measure and plot
+        self.devices_measure = []
+        for device in self.devices:
+            if device != None:
+                if not device.is_connected():
+                    logger.warning("Some device is not connected")
+                    return
+                self.devices_measure.append(device)
+
+        # Generate data structure to store plotting values
+        self.data = []
+        for index in range(len(self.devices_measure)):
+            self.data.append( instrument_data.InstrumentData(
+                n_channels = 1,
+                n_signals = self.devices_measure[index].n_signals,
+                sig_types = self.devices_measure[index].sig_types
+            ))
         logger.debug("Cleaning older stored data")
-        # Sample values for X and Y axis
+
+        # Start the measurement engine
         sample_time = self.SampleTimeBox.value()
-        # Reset and configure FPGA, and initialize acquisition.
-        # FIXME [floonone-20170824] Channel
-        answer = self.devices[0].start_measurement(sample_time, 1)
-        # Set timer (in milliseconds) and seconds counter
-        self.timer.start(sample_time * 1000)
-        logger.debug("Start sampling every {} seconds".format(sample_time))
-        self.counter = 0
+        fetch_time = self.FetchTimeBox.value()
+        self.m_engine.start(self.devices_measure, fetch_time, sample_time)
+        logger.debug("Measurement Starts")
+
+        #Start the timer to update plots
+        self.timer.start(1000) #65ms=15 updates per second (enough for human eye)
+        logger.debug("Plotting Starts")
         return
 
     def update_plots(self):
-        # Ignore the first 3 measurements.
-        if self.counter < 3:
-            self.counter += 1
-            logger.debug("Init delay. {} seconds elapsed.".format(self.counter))
-            return
-        # Get a measurement from FPGA.
-        reply = self.devices[0].fetch_freq()
-        measurement = reply['coarse']
-        self.data['1'][0]['S1'].append(measurement)
-        # Discard old graph and reset basic properties
-        self.ax.cla()
-        self.ax.grid()
-        self.ax.set_ylabel("F(Hz)", rotation= 'horizontal')
-        self.ax.yaxis.set_label_coords(-0.03, 1.04)
-        # Draw the plot
-        self.ax.plot(self.data['1'][0]['S1'], 'r-')
-        # Set the visible area
-        if self.scrollcheckBox.isChecked():
-            if len(self.data['1']) > 100:
-                self.ax.set_xlim(len(self.data['1']) - 100, len(self.data['1']))
-        # Refresh canvas
-        self.canvas.draw()
-        logger.debug("Plot new sample: {}".format(measurement))
+        # Get measuremnts from measurement engine
+        new_samples = self.m_engine.get_values()
+
+        #if the 1st signal of the 1st channel of the 1st device is not empty
+        if len(new_samples[0].channel[0].signal[
+            self.devices_measure[0].sig_types['S1']]) > 0:
+            # Append new measurements to old data
+            for index in range(len(self.devices_measure)):
+                self.data[index].append(new_samples[index])
+                # Discard old graph and reset basic properties
+                self.ax.cla()
+                self.ax.grid()
+                self.ax.set_ylabel("F(Hz)", rotation= 'horizontal')
+                self.ax.yaxis.set_label_coords(-0.03, 1.04)
+                # Draw the plot
+                if self.scrollcheckBox.isChecked():
+                    self.ax.plot(self.data[0].channel[0].signal['coarse'][-100:]
+                    ,'r-')
+                else:
+                    self.ax.plot(self.data[0].channel[0].signal['coarse'], 'r-')
+                # Refresh canvas
+                self.canvas.draw()
         return
 
     def stop_plot(self):
         self.timer.stop()
+        self.m_engine.stop()
         logger.debug("Pressed stop button")
         return
 
@@ -420,7 +438,6 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         for g_idx, group in enumerate(dev_sa.findChildren(QtWidgets.QGroupBox)):
             if g_idx < int(dev_data['channels']['Quantity']):
                 group.setVisible(True)
-                self.data[str(dev)].append(dict())
                 active_signals.append(dict())
                 active_checkboxes.append(dict())
                 # Go over every CheckBox in the channel GroupBox and enable it
@@ -431,7 +448,6 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
                     sig_type = dev_data['channels']['SigTypes'][dic_index]
                     checkbox.setText(sig_type)
                     if sig_type != "<None>":
-                        self.data[str(dev)][g_idx][dic_index] = []
                         active_signals[g_idx][dic_index] = sig_type
                         active_checkboxes[g_idx][dic_index] = checkbox
                         checkbox.setEnabled(True)
