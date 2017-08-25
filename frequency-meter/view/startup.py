@@ -4,6 +4,7 @@
 import glob
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavTbar
+#from matplotlib import ticker
 import matplotlib.pyplot as plt
 import logging
 import os
@@ -154,9 +155,8 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         self.ax.set_ylabel("F(Hz)", rotation= 'horizontal')
         self.ax.yaxis.set_label_coords(-0.05, 1.04)
         # Plot data
-        self.data = [] #its a list of InstrumentData
-        self.signals = [[], []]
-        self.cboxes = [[], []]
+        self.data = [] #list of InstrumentData
+        self.cboxes = [[], []] #list (channel) of lists (signal)
         self.sample_counter = 0
 
     def load_device(self):
@@ -199,8 +199,7 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         self.device_scrollareas[dev-1].setVisible(True)
         self.device_labels[dev-1].setVisible(True)
         self.device_labels[dev-1].setText(device_name)
-        self.signals[dev-1], self.cboxes[dev-1] = self.items_setup(dev_path,
-                                                                   dev)
+        self.cboxes[dev-1] = self.items_setup(dev_path,dev)
         # Devices manager area items set-up
         self.devname_labels_l[dev-1].setVisible(True)
         self.devname_labels_r[dev-1].setText(device_name)
@@ -343,6 +342,8 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
             self.ax.grid()
             self.ax.set_ylabel("F(Hz)", rotation= 'horizontal')
             self.ax.yaxis.set_label_coords(-0.03, 1.04)
+            # Remove exponential notation in y axis
+            self.ax.get_yaxis().get_major_formatter().set_useOffset(False)
 
             #for each signal of each channel of each device
             for dev in range(len(self.dev_measure)):
@@ -458,14 +459,12 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         # Open and load the input device configuration file.
         with open(conf_file, 'r') as read_file:
             dev_data = yaml.load(read_file)
-        active_signals = []
         active_checkboxes = []
         # Go over every group in the device area, representing each possible
         # channel, and set the GUI configuration according to the conf file.
         for g_idx, group in enumerate(dev_sa.findChildren(QtWidgets.QGroupBox)):
             if g_idx < int(dev_data['channels']['Quantity']):
                 group.setVisible(True)
-                active_signals.append(dict())
                 active_checkboxes.append(dict())
                 # Go over every CheckBox in the channel GroupBox and enable it
                 # if it is specified in the configuration file.
@@ -475,7 +474,6 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
                     sig_type = dev_data['channels']['SigTypes'][dic_index]
                     checkbox.setText(sig_type)
                     if sig_type != "<None>":
-                        active_signals[g_idx][dic_index] = sig_type
                         active_checkboxes[g_idx][dic_index] = checkbox
                         checkbox.setEnabled(True)
                     else:
@@ -483,7 +481,7 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
             # Hide the GroupBox if is not specified at the configuration file.
             else:
                 group.setVisible(False)
-        return (active_signals, active_checkboxes)
+        return (active_checkboxes)
 
     def update_logger_level(self):
         """Evaluate the check boxes states and update logger level."""
