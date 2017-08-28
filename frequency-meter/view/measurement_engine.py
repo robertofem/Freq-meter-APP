@@ -111,12 +111,16 @@ class ThreadedMeasurementEngine(MeasurementEngine, QtCore.QObject):
     When the user asks for data from the main thread it reads the list of
     unsent values and provides them to user.
     It inherits from MeasurementEngine to reuse some of its functions
-    It inherits from QObject to be able to emit signals between This
-    bject living in the main thread and the child thread created inside.
+    It inherits from QObject to use Qt signals
     """
 
+    #signals (must be non-dynamic class members):
+    #signal to start the timer inside the new thread
+    startTimer = QtCore.pyqtSignal()
+
     def __init__(self, logger):
-        super(MeasurementEngineThreaded, self).__init__(logger)
+        super(ThreadedMeasurementEngine, self).__init__(logger)
+        QtCore.QObject.__init__(self)
         return
 
     def start(self, instr_list, fetch_time, sample_time):
@@ -131,15 +135,18 @@ class ThreadedMeasurementEngine(MeasurementEngine, QtCore.QObject):
         self._start_instruments(sample_time)
 
         #Create a thread where the timer will live
-        self.thread = MeasurementThread(fetch_time)
-        #Create a signal/slot connection to end the thread from the main thread
-        self.signal_end_thread = QtCore.SIGNAL()
-        thread.connect(self, self.signal_end_thread, self.thread._end_thread)
-        #Create a signal/slot to receive new samples fom thread
-        self.connect(thread, thread.signal_new_samples, self._new_samples)
+        self.thread = QtCore.QThread()
+        self.measurement_timer = MeasurementTimer(self.instr_list, fetch_time)
+        self.measurement_timer.moveToThread(self.thread)
+        #Create a signal/slot connection to start the timer
+        self.startTimer.connect(self.measurement_timer.startTimer)
+        #Create a signal/slot connection to receive new samples from the thread
+        self.measurement_timer.sampleReady.connect(self._new_samples)
 
         #Start the thread
         self.thread.start()
+        #Start the timer
+        self.startTimer.emit()
         self.logger.debug("Start sampling every {} seconds".format(fetch_time))
         return
 
@@ -147,9 +154,8 @@ class ThreadedMeasurementEngine(MeasurementEngine, QtCore.QObject):
         '''
         Overloads MeasurementEngine.stop to add thread support
         '''
-        #Tell the thread to end
-        self.emit(self.signal_end_thread)
-        #Wait for thread to really end
+        #Tell the thread to end and wait for its actual end
+        self.thread.exit()
         self.thread.wait()
         #Destroy the thread object
         self.thread = None
@@ -167,46 +173,36 @@ class ThreadedMeasurementEngine(MeasurementEngine, QtCore.QObject):
         return
 
 
-class MeasurementThread(QtCore.QThread):
+class MeasurementTimer(QtCore.QObject):
     '''
     Thread of execution where the timer lives and where it performs the periodic
     fetch of measurements from instruments
+    Inherit from QObject to be able to use Qt signals
     '''
+    #signals (must be non-dynamic class members):
+    #flags to the main thread that new samples from instruments are available
+    sampleReady = QtCore.pyqtSignal(list)
+
     def __init__(self, instr_list, fetch_time):
-        QtCore.QThread.__init__(self)
+        super(MeasurementTimer,self).__init__()
         self.instr_list = instr_list
         self.fetch_time = fetch_time
-        #signal to send new samples (in dict form) back to main thread-safe
-        self.signal_new_samples = QtCore.SIGNAL({})
         return
 
-    def run(self):
+    def startTimer(self):
         """
-        Overload of the QThread.run() function. This is the function executed
-        in a different thread when start() is executed from the main thread on
-        a QThread object.
+        This function initializes and starts the timer
         """
-        #create the timer to fetch measurements periodically
-        self.timer = QtCore.QTimer()
-        self.timer.timeout.connect(self._measure_thread)
-        self.timer.start(self.fetch_time*1000)
         #Init measuremnt counter (skip first 2 measurements (they can be wrong))
         self.measurement_counter = -2
 
-        #Wait until the main thread wants to end measurements
-        self.finish = False
-        while not self.finish:
-            pass
-
-        #Stop and destroy the timer
-        self.timer.stop()
-        self.timer = None
-
-        #Destroy the thread (use wait after it to ensure it has finished)
-        self.terminate()
+        #create the timer to fetch measurements periodically
+        self.timer = QtCore.QTimer()
+        self.timer.timeout.connect(self._measure)
+        self.timer.start(self.fetch_time*1000)
         return
 
-    def _measure_thread(self):
+    def _measure(self):
         """
         Function executed when the timer event rises.
         It asks a new sample to each instrument and sends them back to
@@ -218,23 +214,15 @@ class MeasurementThread(QtCore.QThread):
             freq_vals = []
             for i in range(len(self.instr_list)):#for each instrument
                 freq_vals.append(
-                    InstrumentData(
+                    instrument_data.InstrumentData(
                         1,
                         self.instr_list[i].n_signals,
-                        self.instr_list[i].signal_types
+                        self.instr_list[i].sig_types
                     )
                 )
-                freq_val[i].channel[0].append_sample(
+                freq_vals[i].channel[0].append_sample(
                     self.instr_list[i].fetch_freq()
                 )
             #signal to the main thread so it can store the new samples
-            self.emit(self.signal_new_samples, freq_vals)
-        return
-
-    def _end_thread(self):
-        '''
-        Slot to receive from the main thread that the measurement thread
-        must be terminated
-        '''
-        self.finish = True
+            self.sampleReady.emit(freq_vals)
         return

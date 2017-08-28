@@ -89,9 +89,8 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         self.setupUi(self)
         self.popup = None
         self.update_devices_list()
-        # Configure the Menu bar actionSave
-        self.menuTools.triggered[QtWidgets.QAction].connect(self.open_calib)
-
+        # Configure the Menu bar
+        self.menuTools.triggered[QtWidgets.QAction].connect(self.tools_action)
         # Configure the logger, assigning an instance of AppLogHandler.
         self.log_handler = AppLogHandler(self.LoggerBrowser)
         logger.addHandler(self.log_handler)
@@ -119,7 +118,7 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         self.dev_label_2.setVisible(False)
         # Device manager buttons
         self.LoadDeviceButton.clicked.connect(self.load_device)
-        self.DeviceMngButton.clicked.connect(self.new_device)
+        self.DeviceMngButton.clicked.connect(self.open_dev_mngr)
         # Devices buttons
         self.removeButton_1.clicked.connect(lambda: self.remove_device(dev=1))
         self.removeButton_2.clicked.connect(lambda: self.remove_device(dev=2))
@@ -141,6 +140,7 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         self.timer.timeout.connect(self.update_plots)
         #Measuremnt engine
         self.m_engine = measurement_engine.ThreadedMeasurementEngine(logger)
+
         # plot layout set-up.
         self.figure = plt.figure()
         self.figure.patch.set_alpha(0)
@@ -216,7 +216,13 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         self.connect_buttons[dev-1].setEnabled(True)
         return
 
-    def new_device(self):
+    def tools_action(self,q):
+        if q.text() == "Device manager":
+            self.open_dev_mngr()
+        elif q.text() == "FPGA frequency meter calibration":
+            self.open_calib()
+
+    def open_dev_mngr(self):
         logger.debug("Opening Device Manager pop-up window")
         self.popup = device_manager.DevManagerWindow()
         self.popup.exec_()
@@ -323,7 +329,7 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         logger.debug("Measurement Starts")
 
         #Start the timer to update plots
-        self.timer.start(1000) #65ms=15 updates per second (enough for human eye)
+        self.timer.start(500) #65ms=15 updates per second (enough for human eye)
         logger.debug("Plotting Starts")
         return
 
@@ -389,9 +395,7 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         return
 
     def debug(self):
-        sample_time = self.SampleTimeBox.value()
-        self.timer.start(sample_time * 1000)
-        logger.debug("Start sampling every {} seconds".format(sample_time))
+        print("debug")
         return
 
     def debug_plot(self):

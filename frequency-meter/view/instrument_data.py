@@ -24,6 +24,12 @@ class InstrumentData():
             ch.clear()
         return
 
+    def print_data(self):
+        for ch_index in range(len(self.channel)):
+            print("Channel {ch}:{sig}".format(
+                ch=ch_index, sig=self.channel[ch_index].signal))
+        return
+
 class ChannelData():
     """
     Class representing data for one channel
@@ -51,14 +57,15 @@ class ChannelData():
         signals_to_append: ChannelData object to append
         """
         for sigtype, values in self.signal.items():
-            values.append(signals_to_append.signal[sigtype])
+            for i in range(len(signals_to_append.signal[sigtype])):
+                values.append(signals_to_append.signal[sigtype][i])
         return
 
     def append_sample(self, measuremnt):
         """
         Appends one measuremnt to the measuremnts in the this object
 
-        measuremnt: dict with the self.signal format of self.signal
+        measuremnt: dict with the self.signal format
         """
         for sigtype, values in self.signal.items():
             values.append(measuremnt[sigtype])
@@ -67,4 +74,7 @@ class ChannelData():
     def clear(self):
         for sigtype, values in self.signal.items():
             values.clear()
+
+    def print_data(self):
+        print(self.signal)
         return
