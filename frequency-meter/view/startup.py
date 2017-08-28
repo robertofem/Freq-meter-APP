@@ -4,7 +4,6 @@
 import glob
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavTbar
-#from matplotlib import ticker
 import matplotlib.pyplot as plt
 import logging
 import os
@@ -141,7 +140,7 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         self.timer = QtCore.QTimer()
         self.timer.timeout.connect(self.update_plots)
         #Measuremnt engine
-        self.m_engine = measurement_engine.MeasurementEngine(logger)
+        self.m_engine = measurement_engine.ThreadedMeasurementEngine(logger)
         # plot layout set-up.
         self.figure = plt.figure()
         self.figure.patch.set_alpha(0)
