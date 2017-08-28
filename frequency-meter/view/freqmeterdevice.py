@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # Standard libraries
 import abc
+import logging
 import random
 import yaml
 
@@ -8,23 +9,25 @@ import yaml
 from view import clientprotocol
 
 
+logger = logging.getLogger("view")
+
+
 class FreqMeter(abc.ABC):
     @staticmethod
-    def get_freq_meter(dev_path, logger):
+    def get_freq_meter(dev_path):
         with open(dev_path, 'r') as read_file:
             data = yaml.load(read_file)
             vendor = data["general"]["Vendor"]
         if vendor == "Uvigo":
-            return UviFreqMeter(dev_path, logger)
+            return UviFreqMeter(dev_path)
         elif vendor == "Agilent":
-            return AgilentFreqMeter(dev_path, logger)
+            return AgilentFreqMeter(dev_path)
         elif vendor == "Test":
-            return TestFreqMeter(dev_path, logger)
+            return TestFreqMeter(dev_path)
         else:
             return None
 
-    def __init__(self, dev_path, logger):
-        self.logger = logger
+    def __init__(self, dev_path):
         # Read and load the device configuration file
         with open(dev_path, 'r') as read_file:
             self._dev_data = yaml.load(read_file)
@@ -94,7 +97,7 @@ class UviFreqMeter(FreqMeter):
     def fetch_freq(self):
         success, reply = self._send("FETCH:FREQ:ALL", True)
         if not success:
-            self.logger.error("Couldn't fetch frequency")
+            logger.error("Couldn't fetch frequency")
             return
         values = reply.decode().split(",")
         return {
@@ -168,7 +171,7 @@ class AgilentFreqMeter(FreqMeter):
     def fetch_freq(self):
         success, reply = self._send("FETC:FREQ?", True)
         if not success:
-            self.logger.error("Couldn't fetch frequency")
+            logger.error("Couldn't fetch frequency")
             return
         return {
             self.sig_types['S1']: float(reply),

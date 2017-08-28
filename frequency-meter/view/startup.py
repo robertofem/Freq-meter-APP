@@ -188,8 +188,7 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         else:
             logger.warning("There are 2 devices already loaded!")
             return
-        self.devices[dev-1] = freqmeterdevice.FreqMeter.get_freq_meter(dev_path,
-                                                                       logger)
+        self.devices[dev-1] = freqmeterdevice.FreqMeter.get_freq_meter(dev_path)
 
         if self.devices[0] is None:
             logger.debug("self.device[0] is None")
