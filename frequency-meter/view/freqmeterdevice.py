@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 # Standard libraries
 import abc
-import yaml
-from view import clientprotocol
-# library for TestFreqMeter only
 import random
+import yaml
+
+# Local application
+from view import clientprotocol
+
 
 class FreqMeter(abc.ABC):
     @staticmethod
@@ -164,13 +166,14 @@ class AgilentFreqMeter(FreqMeter):
         self._send("INIT")
 
     def fetch_freq(self):
-        success, reply = self._send("READ:FREQ?", True)
+        success, reply = self._send("FETC:FREQ?", True)
         if not success:
             self.logger.error("Couldn't fetch frequency")
             return
         return {
             self.sig_types['S1']: float(reply),
         }
+
 
 class TestFreqMeter(FreqMeter):
     n_channels = 2
