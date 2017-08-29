@@ -1,21 +1,23 @@
-from PyQt5 import QtCore
-import queue
-import threading
+# Standard libraries
 import copy
-
-from view import freqmeterdevice
+import logging
+# Third party libraries
+from PyQt5 import QtCore
+# Local libraries
 from view import instrument_data
 
-class MeasurementEngine():
+logger = logging.getLogger("view")
+
+
+class MeasurementEngine:
     """
     Launches a timer and for every tick in the timer
     it ask data to the instruments and adds it to a list. When the user
     asks for data it provides the data still not read.
     """
 
-    def __init__(self, logger):
-        self.logger = logger
-        return
+    def __init__(self):
+        self.__timer = None
 
     def start(self, instr_list, fetch_time, sample_time):
         """
@@ -27,28 +29,28 @@ class MeasurementEngine():
             one measurement, in seconds
         """
 
-        #Generate a clean device list and data structures to save measurments
+        # Generate a clean device list and data structures to save measurements
         self._generate_internal_device_list(instr_list)
         self._generate_data_structures()
         self._start_instruments(sample_time)
 
-        #Init measuremnt counter (skip first 2 measurements (they can be wrong))
+        # Init measuremnt counter (skip first 2 measurements (they can be wrong))
         self.measurement_counter = -2
 
-        #Create and start timer
-        self.timer = QtCore.QTimer()
-        self.timer.timeout.connect(self._measure)
-        self.timer.start(fetch_time*1000)
-        self.logger.debug("Start sampling every {} seconds".format(fetch_time))
+        # Create and start timer
+        self.__timer = QtCore.QTimer()
+        self.__timer.timeout.connect(self._measure)
+        self.__timer.start(fetch_time*1000)
+        logger.debug("Start sampling every {} seconds".format(fetch_time))
         return
 
     def stop(self):
         """
         Stop the timer and therefore the measurements
         """
-        self.timer.stop()
-        self.timer = None
-        self.logger.debug("Sampling finished")
+        self.__timer.stop()
+        self.__timer = None
+        logger.debug("Sampling finished")
         return
 
     def get_values(self):
@@ -56,7 +58,7 @@ class MeasurementEngine():
         Retrieve measurements from the measurement engine. Values in the list
         unsent_values are given as return. unsent_values is cleared.
         """
-        #deepcopy is used to copy lists containing objects
+        # Deep copy is used to copy lists containing objects
         return_values = copy.deepcopy(self.unsent_values)
         for unsent in self.unsent_values:
             unsent.clear()
@@ -103,6 +105,7 @@ class MeasurementEngine():
                 )
         return
 
+
 class ThreadedMeasurementEngine(MeasurementEngine, QtCore.QObject):
     """
     Launches a timer in different thread and for every tick in the timer
@@ -114,73 +117,74 @@ class ThreadedMeasurementEngine(MeasurementEngine, QtCore.QObject):
     It inherits from QObject to use Qt signals
     """
 
-    #signals (must be non-dynamic class members):
-    #signal to start the timer inside the new thread
+    # Signals (must be non-dynamic class members):
+    # Signal to start the timer inside the new thread
     startTimer = QtCore.pyqtSignal()
 
-    def __init__(self, logger):
-        super(ThreadedMeasurementEngine, self).__init__(logger)
+    def __init__(self):
+        super(ThreadedMeasurementEngine, self).__init__()
         QtCore.QObject.__init__(self)
         return
 
     def start(self, instr_list, fetch_time, sample_time):
-        '''
+        """
         Overloads MeasurementEngine.start to add thread support
-        '''
-        #Generate a clean device list and data structures to save measurments
+        """
+        # Generate a clean device list and data structures to save measurements
         self._generate_internal_device_list(instr_list)
         self._generate_data_structures()
 
-        #Tell the instruments to start measuring
+        # Tell the instruments to start measuring
         self._start_instruments(sample_time)
 
-        #Create a thread where the timer will live
+        # Create a thread where the timer will live
         self.thread = QtCore.QThread()
         self.measurement_timer = MeasurementTimer(self.instr_list, fetch_time)
         self.measurement_timer.moveToThread(self.thread)
-        #Create a signal/slot connection to start the timer
+        # Create a signal/slot connection to start the timer
         self.startTimer.connect(self.measurement_timer.startTimer)
-        #Create a signal/slot connection to receive new samples from the thread
+        # Create a signal/slot connection to receive new samples from the thread
         self.measurement_timer.sampleReady.connect(self._new_samples)
 
-        #Start the thread
+        # Start the thread
         self.thread.start()
-        #Start the timer
+        # Start the timer
         self.startTimer.emit()
-        self.logger.debug("Start sampling every {} seconds".format(fetch_time))
+        logger.debug("Start sampling every {} seconds".format(fetch_time))
         return
 
     def stop(self):
-        '''
+        """
         Overloads MeasurementEngine.stop to add thread support
-        '''
-        #Tell the thread to end and wait for its actual end
+        """
+        # Tell the thread to end and wait for its actual end
         self.thread.exit()
         self.thread.wait()
-        #Destroy the thread object
+        # Destroy the thread object
         self.thread = None
         return
 
     def _new_samples(self, new_samples):
-        '''
-        Function executed when new samples are available from measuremnt thread
+        """
+        Function executed when new samples are available from measurement thread
         new_samples: list of InstrumentData objects. Ech object contains
         only one sample for the instrument (last sample) for all channels and
         signals
-        '''
-        for index in range(len(self.instr_list)):#for each instrument
+        """
+        # for each instrument
+        for index in range(len(self.instr_list)):
             self.unsent_values[index].append(new_samples[index])
         return
 
 
 class MeasurementTimer(QtCore.QObject):
-    '''
+    """
     Thread of execution where the timer lives and where it performs the periodic
     fetch of measurements from instruments
     Inherit from QObject to be able to use Qt signals
-    '''
-    #signals (must be non-dynamic class members):
-    #flags to the main thread that new samples from instruments are available
+    """
+    # Signals (must be non-dynamic class members):
+    # Flags to the main thread that new samples from instruments are available
     sampleReady = QtCore.pyqtSignal(list)
 
     def __init__(self, instr_list, fetch_time):
@@ -193,10 +197,10 @@ class MeasurementTimer(QtCore.QObject):
         """
         This function initializes and starts the timer
         """
-        #Init measuremnt counter (skip first 2 measurements (they can be wrong))
+        # Init measuremnt counter (skip first 2 measurements (they can be wrong))
         self.measurement_counter = -2
 
-        #create the timer to fetch measurements periodically
+        # Create the timer to fetch measurements periodically
         self.timer = QtCore.QTimer()
         self.timer.timeout.connect(self._measure)
         self.timer.start(self.fetch_time*1000)
@@ -210,9 +214,10 @@ class MeasurementTimer(QtCore.QObject):
         """
         self.measurement_counter += 1
         if self.measurement_counter > 0:
-            #get new frequency values from instruments
+            # Get new frequency values from instruments
             freq_vals = []
-            for i in range(len(self.instr_list)):#for each instrument
+            # for each instrument
+            for i in range(len(self.instr_list)):
                 freq_vals.append(
                     instrument_data.InstrumentData(
                         1,
@@ -223,6 +228,6 @@ class MeasurementTimer(QtCore.QObject):
                 freq_vals[i].channel[0].append_sample(
                     self.instr_list[i].fetch_freq()
                 )
-            #signal to the main thread so it can store the new samples
+            # Signal to the main thread so it can store the new samples
             self.sampleReady.emit(freq_vals)
         return

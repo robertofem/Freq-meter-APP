@@ -105,6 +105,7 @@ class VISAClient(Client):
     def read(self):
         return True, self.__resource.read()
 
+
 class TestClient(Client):
     def __init__(self):
         return
