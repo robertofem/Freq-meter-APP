@@ -112,13 +112,13 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         self.devname_label_l_1.setVisible(False)
         self.devname_label_l_2.setVisible(False)
         # Measurements channels labels initial configuration
-        self.dev1_scrollarea.setVisible(False)
-        self.dev2_scrollarea.setVisible(False)
-        self.dev_label_1.setVisible(False)
-        self.dev_label_2.setVisible(False)
+        self.dev1_scrollarea.setVisible(True)
+        self.dev2_scrollarea.setVisible(True)
+        self.dev1_scrollarea.setFixedHeight(145)
+        self.dev2_scrollarea.setFixedHeight(145)
         # Device manager buttons
         self.LoadDeviceButton.clicked.connect(self.load_device)
-        self.DeviceMngButton.clicked.connect(self.open_dev_mngr)
+        self.LoadDeviceButton.clicked.connect(self.load_device)
         # Devices buttons
         self.removeButton_1.clicked.connect(lambda: self.remove_device(dev=1))
         self.removeButton_2.clicked.connect(lambda: self.remove_device(dev=2))
@@ -131,7 +131,6 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         self.devname_labels_r = [self.devname_label_r_1, self.devname_label_r_2]
         self.status_labels = [self.status_label_1, self.status_label_2]
         self.connected_labels = [self.connected_label_1, self.connected_label_2]
-        self.device_labels = [self.dev_label_1, self.dev_label_2]
         self.device_scrollareas = [self.dev1_scrollarea, self.dev2_scrollarea]
         # Instrument devices list.
         self.devices = [None, None]
@@ -149,7 +148,7 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         self.plotVLayout.addWidget(self.toolbar)
         self.plotVLayout.addWidget(self.canvas)
         self.ax = self.figure.add_subplot(111)
-        self.figure.subplots_adjust(top=0.85, bottom=0.10, left=0.1)
+        self.figure.subplots_adjust(top=0.9, bottom=0.1, left=0.13, right=0.95)
         self.ax.grid()
         self.ax.set_ylabel("F(Hz)", rotation= 'horizontal')
         self.ax.yaxis.set_label_coords(-0.05, 1.04)
@@ -158,7 +157,7 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         self.cboxes = [[], []] #list (channel) of lists (signal)
         self.sample_counter = 0
 
-    def load_device(self):
+    def load_device(self, cmbox):
         """
         Load the selected device to the first available slot.
         """
@@ -167,10 +166,11 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         if device_name == "<None>":
             logger.warning("No device selected")
             return
-        elif device_name in (self.device_labels[0].text(),
-                             self.device_labels[1].text()):
-            logger.warning("Selected device is already loaded")
-            return
+        #elif device_name in (self.device_labels[0].text(),
+        #                     self.device_labels[1].text()):
+        #    logger.warning("Selected device is already loaded")
+        #    return
+
         # Deal with the situation where the conf file is deleted since
         # the last time the list was refreshed.
         dev_dir = "{}/resources/devices/".format(os.getcwd())
@@ -195,8 +195,6 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         logger.info("Loaded the device {dev}".format(dev=device_name))
         # Measurement area items set-up
         self.device_scrollareas[dev-1].setVisible(True)
-        self.device_labels[dev-1].setVisible(True)
-        self.device_labels[dev-1].setText(device_name)
         self.cboxes[dev-1] = self.items_setup(dev_path,dev)
         # Devices manager area items set-up
         self.devname_labels_l[dev-1].setVisible(True)
@@ -215,6 +213,7 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         self.remove_buttons[dev-1].setEnabled(True)
         self.connect_buttons[dev-1].setEnabled(True)
         return
+
 
     def tools_action(self,q):
         if q.text() == "Device manager":
@@ -288,14 +287,12 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         self.connected_labels[dev-1].setVisible(False)
         self.devname_labels_l[dev-1].setVisible(False)
         self.devname_labels_r[dev-1].setText("")
-        self.device_labels[dev-1].setText("")
         self.LoadDeviceButton.setEnabled(True)
         self.DeviceComboBox.setEnabled(True)
         self.remove_buttons[dev-1].setEnabled(False)
         self.connect_buttons[dev-1].setEnabled(False)
         # Measurement area items set-up
         self.device_scrollareas[dev-1].setVisible(False)
-        self.device_labels[dev-1].setVisible(False)
         # Disable the times group box if any device is loaded.
         if all(dev is None for dev in self.devices):
             self.TimesgroupBox.setEnabled(False)

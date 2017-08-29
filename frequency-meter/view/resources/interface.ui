@@ -51,6 +51,19 @@
            </property>
           </widget>
          </item>
+         <item row="1" column="4">
+          <spacer name="horizontalSpacer_2">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>80</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
          <item row="2" column="0" rowspan="2" colspan="5">
           <widget class="QTextBrowser" name="LoggerBrowser">
            <property name="font">
@@ -68,19 +81,6 @@
             <set>Qt::LinksAccessibleByKeyboard|Qt::LinksAccessibleByMouse|Qt::TextBrowserInteraction|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
            </property>
           </widget>
-         </item>
-         <item row="1" column="4">
-          <spacer name="horizontalSpacer_2">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>80</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
          </item>
          <item row="1" column="0">
           <widget class="QRadioButton" name="InfoCheck">
@@ -125,193 +125,587 @@
        </widget>
       </item>
       <item row="0" column="0" colspan="4">
-       <widget class="QGroupBox" name="groupBox_2">
+       <widget class="QGroupBox" name="groupBox_dev">
         <property name="title">
-         <string>Devices:</string>
+         <string>Devices</string>
         </property>
-        <layout class="QGridLayout" name="gridLayout_6">
-         <item row="3" column="4" colspan="3">
-          <widget class="QGroupBox" name="groupBox_4">
-           <property name="title">
-            <string>Device 2</string>
+        <layout class="QHBoxLayout" name="horizontalLayout">
+         <item>
+          <widget class="QGroupBox" name="groupBox_dev1">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
            </property>
-           <layout class="QGridLayout" name="gridLayout_5">
-            <item row="0" column="0">
-             <widget class="QLabel" name="devname_label_l_2">
-              <property name="text">
-               <string>Name:</string>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="0">
-             <widget class="QLabel" name="status_label_2">
-              <property name="text">
-               <string>Status:</string>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="1">
-             <widget class="QLabel" name="devname_label_r_2">
-              <property name="text">
-               <string/>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="1">
-             <widget class="QLabel" name="connected_label_2">
-              <property name="text">
-               <string>connected</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="2">
-             <widget class="QPushButton" name="removeButton_2">
-              <property name="enabled">
-               <bool>false</bool>
-              </property>
-              <property name="text">
-               <string>Remove device</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="2">
-             <widget class="QPushButton" name="connectButton_2">
-              <property name="enabled">
-               <bool>false</bool>
-              </property>
-              <property name="text">
-               <string>Connect</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </widget>
-         </item>
-         <item row="1" column="6">
-          <widget class="QPushButton" name="DeviceMngButton">
-           <property name="text">
-            <string>Device Manager</string>
-           </property>
-          </widget>
-         </item>
-         <item row="3" column="0" colspan="3">
-          <widget class="QGroupBox" name="groupBox_3">
            <property name="title">
             <string>Device 1</string>
            </property>
-           <layout class="QGridLayout" name="gridLayout_4">
-            <item row="1" column="2">
-             <widget class="QLabel" name="connected_label_1">
-              <property name="text">
-               <string>connected</string>
-              </property>
-             </widget>
+           <layout class="QHBoxLayout" name="horizontalLayout_2">
+            <item>
+             <layout class="QGridLayout" name="gridLayout_4">
+              <item row="1" column="2">
+               <widget class="QLabel" name="connected_label_1">
+                <property name="text">
+                 <string>connected</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="0">
+               <widget class="QComboBox" name="DeviceComboBox">
+                <item>
+                 <property name="text">
+                  <string>&lt;None&gt;</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>DE1_SoC</string>
+                 </property>
+                </item>
+               </widget>
+              </item>
+              <item row="0" column="2">
+               <widget class="QLabel" name="devname_label_r_1">
+                <property name="text">
+                 <string>dev1name</string>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="0">
+               <widget class="QPushButton" name="removeButton_1">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
+                <property name="text">
+                 <string>Remove device</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="1">
+               <widget class="QLabel" name="devname_label_l_1">
+                <property name="text">
+                 <string>Name:</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="0">
+               <widget class="QPushButton" name="LoadDeviceButton">
+                <property name="text">
+                 <string>Load device</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="1">
+               <widget class="QLabel" name="status_label_1">
+                <property name="enabled">
+                 <bool>true</bool>
+                </property>
+                <property name="text">
+                 <string>Status:</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="2">
+               <widget class="QPushButton" name="connectButton_1">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
+                <property name="text">
+                 <string>Connect</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
             </item>
-            <item row="0" column="1">
-             <widget class="QLabel" name="devname_label_l_1">
-              <property name="text">
-               <string>Name:</string>
+            <item>
+             <widget class="QScrollArea" name="dev1_scrollarea">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
               </property>
-              <property name="alignment">
-               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              <property name="minimumSize">
+               <size>
+                <width>240</width>
+                <height>80</height>
+               </size>
               </property>
-             </widget>
-            </item>
-            <item row="0" column="2">
-             <widget class="QLabel" name="devname_label_r_1">
-              <property name="text">
-               <string/>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="1">
-             <widget class="QLabel" name="status_label_1">
-              <property name="enabled">
+              <property name="widgetResizable">
                <bool>true</bool>
               </property>
-              <property name="text">
-               <string>Status:</string>
-              </property>
               <property name="alignment">
-               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
               </property>
-             </widget>
-            </item>
-            <item row="0" column="3">
-             <widget class="QPushButton" name="removeButton_1">
-              <property name="enabled">
-               <bool>false</bool>
-              </property>
-              <property name="text">
-               <string>Remove device</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="3">
-             <widget class="QPushButton" name="connectButton_1">
-              <property name="enabled">
-               <bool>false</bool>
-              </property>
-              <property name="text">
-               <string>Connect</string>
-              </property>
+              <widget class="QWidget" name="scrollAreaWidgetContents">
+               <property name="geometry">
+                <rect>
+                 <x>0</x>
+                 <y>-24</y>
+                 <width>221</width>
+                 <height>334</height>
+                </rect>
+               </property>
+               <layout class="QVBoxLayout" name="verticalLayout">
+                <item>
+                 <widget class="QGroupBox" name="Dev1_Ch1">
+                  <property name="title">
+                   <string>Ch 1</string>
+                  </property>
+                  <layout class="QGridLayout" name="gridLayout_18">
+                   <item row="0" column="0">
+                    <widget class="QCheckBox" name="Dev1_Ch1_S1">
+                     <property name="text">
+                      <string>Fine</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="1">
+                    <widget class="QCheckBox" name="Dev1_Ch1_S2">
+                     <property name="text">
+                      <string>Fine</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="0">
+                    <widget class="QCheckBox" name="Dev1_Ch1_S3">
+                     <property name="text">
+                      <string>Fine</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="1">
+                    <widget class="QCheckBox" name="Dev1_Ch1_S4">
+                     <property name="text">
+                      <string>Fine</string>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QGroupBox" name="Dev1_Ch2">
+                  <property name="title">
+                   <string>Ch 2</string>
+                  </property>
+                  <layout class="QGridLayout" name="gridLayout_19">
+                   <item row="0" column="0">
+                    <widget class="QCheckBox" name="Dev1_Ch2_S1">
+                     <property name="text">
+                      <string>Fine</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="1">
+                    <widget class="QCheckBox" name="Dev1_Ch2_S2">
+                     <property name="text">
+                      <string>Fine</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="0">
+                    <widget class="QCheckBox" name="Dev1_Ch2_S3">
+                     <property name="text">
+                      <string>Fine</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="1">
+                    <widget class="QCheckBox" name="Dev1_Ch2_S4">
+                     <property name="text">
+                      <string>Fine</string>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QGroupBox" name="Dev1_Ch3">
+                  <property name="title">
+                   <string>Ch 3</string>
+                  </property>
+                  <layout class="QGridLayout" name="gridLayout_20">
+                   <item row="0" column="0">
+                    <widget class="QCheckBox" name="Dev1_Ch3_S1">
+                     <property name="text">
+                      <string>Fine</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="1">
+                    <widget class="QCheckBox" name="Dev1_Ch3_S2">
+                     <property name="text">
+                      <string>Fine</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="0">
+                    <widget class="QCheckBox" name="Dev1_Ch3_S3">
+                     <property name="text">
+                      <string>Fine</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="1">
+                    <widget class="QCheckBox" name="Dev1_Ch3_S4">
+                     <property name="text">
+                      <string>Fine</string>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QGroupBox" name="Dev1_Ch4">
+                  <property name="title">
+                   <string>Ch 4</string>
+                  </property>
+                  <layout class="QGridLayout" name="gridLayout_21">
+                   <item row="0" column="0">
+                    <widget class="QCheckBox" name="Dev1_Ch4_S1">
+                     <property name="text">
+                      <string>Fine</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="1">
+                    <widget class="QCheckBox" name="Dev1_Ch4_S2">
+                     <property name="text">
+                      <string>Fine</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="0">
+                    <widget class="QCheckBox" name="Dev1_Ch4_S3">
+                     <property name="text">
+                      <string>Fine</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="1">
+                    <widget class="QCheckBox" name="Dev1_Ch4_S4">
+                     <property name="text">
+                      <string>Fine</string>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+                <item>
+                 <spacer name="verticalSpacer">
+                  <property name="orientation">
+                   <enum>Qt::Vertical</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>20</width>
+                    <height>40</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+               </layout>
+              </widget>
              </widget>
             </item>
            </layout>
           </widget>
          </item>
-         <item row="2" column="0" colspan="7">
-          <widget class="Line" name="line">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
+         <item>
+          <widget class="QGroupBox" name="groupBox_dev2">
+           <property name="title">
+            <string>Device 2</string>
            </property>
-          </widget>
-         </item>
-         <item row="1" column="1">
-          <widget class="QPushButton" name="LoadDeviceButton">
-           <property name="text">
-            <string>Load device</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="0">
-          <widget class="QComboBox" name="DeviceComboBox">
-           <item>
-            <property name="text">
-             <string>&lt;None&gt;</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>DE1_SoC</string>
-            </property>
-           </item>
-          </widget>
-         </item>
-         <item row="1" column="2" colspan="4">
-          <spacer name="horizontalSpacer_3">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>40</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-         <item row="3" column="3">
-          <widget class="Line" name="line_2">
-           <property name="orientation">
-            <enum>Qt::Vertical</enum>
-           </property>
+           <layout class="QHBoxLayout" name="horizontalLayout_3">
+            <item>
+             <layout class="QGridLayout" name="gridLayout_5">
+              <item row="0" column="0">
+               <widget class="QComboBox" name="DeviceComboBox_2">
+                <item>
+                 <property name="text">
+                  <string>&lt;None&gt;</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>DE1_SoC</string>
+                 </property>
+                </item>
+               </widget>
+              </item>
+              <item row="0" column="2">
+               <widget class="QLabel" name="devname_label_r_2">
+                <property name="text">
+                 <string>dev2name</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="0">
+               <widget class="QPushButton" name="LoadDeviceButton_2">
+                <property name="text">
+                 <string>Load device</string>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="2">
+               <widget class="QPushButton" name="connectButton_2">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
+                <property name="text">
+                 <string>Connect</string>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="0">
+               <widget class="QPushButton" name="removeButton_2">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
+                <property name="text">
+                 <string>Remove device</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="1">
+               <widget class="QLabel" name="status_label_2">
+                <property name="text">
+                 <string>Status:</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="1">
+               <widget class="QLabel" name="devname_label_l_2">
+                <property name="text">
+                 <string>Name:</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="2">
+               <widget class="QLabel" name="connected_label_2">
+                <property name="text">
+                 <string>connected</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <widget class="QScrollArea" name="dev2_scrollarea">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>240</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="widgetResizable">
+               <bool>true</bool>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+              </property>
+              <widget class="QWidget" name="scrollAreaWidgetContents_2">
+               <property name="geometry">
+                <rect>
+                 <x>0</x>
+                 <y>-24</y>
+                 <width>221</width>
+                 <height>334</height>
+                </rect>
+               </property>
+               <layout class="QVBoxLayout" name="verticalLayout_2">
+                <property name="topMargin">
+                 <number>9</number>
+                </property>
+                <item>
+                 <widget class="QGroupBox" name="Dev2_Ch1">
+                  <property name="title">
+                   <string>Ch 1</string>
+                  </property>
+                  <layout class="QGridLayout" name="gridLayout_15">
+                   <item row="0" column="0">
+                    <widget class="QCheckBox" name="Dev2_Ch1_S1">
+                     <property name="text">
+                      <string>Fine</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="1">
+                    <widget class="QCheckBox" name="Dev2_Ch1_S2">
+                     <property name="text">
+                      <string>Fine</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="0">
+                    <widget class="QCheckBox" name="Dev2_Ch1_S3">
+                     <property name="text">
+                      <string>Fine</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="1">
+                    <widget class="QCheckBox" name="Dev2_Ch1_S4">
+                     <property name="text">
+                      <string>Fine</string>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QGroupBox" name="Dev2_Ch2">
+                  <property name="title">
+                   <string>Ch 2</string>
+                  </property>
+                  <layout class="QGridLayout" name="gridLayout_16">
+                   <item row="0" column="1">
+                    <widget class="QCheckBox" name="Dev2_Ch2_S2">
+                     <property name="text">
+                      <string>Fine</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="0">
+                    <widget class="QCheckBox" name="Dev2_Ch2_S3">
+                     <property name="text">
+                      <string>Fine</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="0">
+                    <widget class="QCheckBox" name="Dev2_Ch2_S1">
+                     <property name="text">
+                      <string>Fine</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="1">
+                    <widget class="QCheckBox" name="Dev2_Ch2_S4">
+                     <property name="text">
+                      <string>Fine</string>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QGroupBox" name="Dev2_Ch3">
+                  <property name="title">
+                   <string>Ch 3</string>
+                  </property>
+                  <layout class="QGridLayout" name="gridLayout_17">
+                   <item row="0" column="0">
+                    <widget class="QCheckBox" name="Dev2_Ch3_S1">
+                     <property name="text">
+                      <string>Fine</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="0">
+                    <widget class="QCheckBox" name="Dev2_Ch3_S3">
+                     <property name="text">
+                      <string>Fine</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="1">
+                    <widget class="QCheckBox" name="Dev2_Ch3_S4">
+                     <property name="text">
+                      <string>Fine</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="1">
+                    <widget class="QCheckBox" name="Dev2_Ch3_S2">
+                     <property name="text">
+                      <string>Fine</string>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QGroupBox" name="Dev2_Ch4">
+                  <property name="title">
+                   <string>Ch 4</string>
+                  </property>
+                  <layout class="QGridLayout" name="gridLayout_14">
+                   <item row="0" column="0">
+                    <widget class="QCheckBox" name="Dev2_Ch4_S1">
+                     <property name="text">
+                      <string>Fine</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="1">
+                    <widget class="QCheckBox" name="Dev2_Ch4_S2">
+                     <property name="text">
+                      <string>Fine</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="0">
+                    <widget class="QCheckBox" name="Dev2_Ch4_S3">
+                     <property name="text">
+                      <string>Fine</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="1">
+                    <widget class="QCheckBox" name="Dev2_Ch4_S4">
+                     <property name="text">
+                      <string>Fine</string>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+                <item>
+                 <spacer name="verticalSpacer_2">
+                  <property name="orientation">
+                   <enum>Qt::Vertical</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>20</width>
+                    <height>40</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+               </layout>
+              </widget>
+             </widget>
+            </item>
+           </layout>
           </widget>
          </item>
         </layout>
@@ -323,466 +717,7 @@
          <string>Measurements</string>
         </property>
         <layout class="QGridLayout" name="gridLayout_7">
-         <item row="7" column="4">
-          <widget class="QCheckBox" name="scrollcheckBox">
-           <property name="text">
-            <string>Autoscroll</string>
-           </property>
-           <property name="checked">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-         <item row="7" column="5">
-          <widget class="QPushButton" name="DebugButton">
-           <property name="text">
-            <string>Debug</string>
-           </property>
-          </widget>
-         </item>
-         <item row="4" column="0">
-          <widget class="QLabel" name="dev_label_1">
-           <property name="font">
-            <font>
-             <weight>75</weight>
-             <bold>true</bold>
-            </font>
-           </property>
-           <property name="text">
-            <string>Device 1</string>
-           </property>
-          </widget>
-         </item>
-         <item row="4" column="1">
-          <widget class="QLabel" name="dev_label_2">
-           <property name="font">
-            <font>
-             <weight>75</weight>
-             <bold>true</bold>
-            </font>
-           </property>
-           <property name="text">
-            <string>Device 2</string>
-           </property>
-          </widget>
-         </item>
-         <item row="5" column="0" rowspan="3">
-          <widget class="QScrollArea" name="dev1_scrollarea">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Maximum" vsizetype="Expanding">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="minimumSize">
-            <size>
-             <width>240</width>
-             <height>0</height>
-            </size>
-           </property>
-           <property name="widgetResizable">
-            <bool>true</bool>
-           </property>
-           <property name="alignment">
-            <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-           </property>
-           <widget class="QWidget" name="scrollAreaWidgetContents">
-            <property name="geometry">
-             <rect>
-              <x>0</x>
-              <y>0</y>
-              <width>221</width>
-              <height>334</height>
-             </rect>
-            </property>
-            <layout class="QVBoxLayout" name="verticalLayout">
-             <item>
-              <widget class="QGroupBox" name="Dev1_Ch1">
-               <property name="title">
-                <string>Ch 1</string>
-               </property>
-               <layout class="QGridLayout" name="gridLayout_18">
-                <item row="0" column="0">
-                 <widget class="QCheckBox" name="Dev1_Ch1_S1">
-                  <property name="text">
-                   <string>Fine</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="0" column="1">
-                 <widget class="QCheckBox" name="Dev1_Ch1_S2">
-                  <property name="text">
-                   <string>Fine</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="1" column="0">
-                 <widget class="QCheckBox" name="Dev1_Ch1_S3">
-                  <property name="text">
-                   <string>Fine</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="1" column="1">
-                 <widget class="QCheckBox" name="Dev1_Ch1_S4">
-                  <property name="text">
-                   <string>Fine</string>
-                  </property>
-                 </widget>
-                </item>
-               </layout>
-              </widget>
-             </item>
-             <item>
-              <widget class="QGroupBox" name="Dev1_Ch2">
-               <property name="title">
-                <string>Ch 2</string>
-               </property>
-               <layout class="QGridLayout" name="gridLayout_19">
-                <item row="0" column="0">
-                 <widget class="QCheckBox" name="Dev1_Ch2_S1">
-                  <property name="text">
-                   <string>Fine</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="0" column="1">
-                 <widget class="QCheckBox" name="Dev1_Ch2_S2">
-                  <property name="text">
-                   <string>Fine</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="1" column="0">
-                 <widget class="QCheckBox" name="Dev1_Ch2_S3">
-                  <property name="text">
-                   <string>Fine</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="1" column="1">
-                 <widget class="QCheckBox" name="Dev1_Ch2_S4">
-                  <property name="text">
-                   <string>Fine</string>
-                  </property>
-                 </widget>
-                </item>
-               </layout>
-              </widget>
-             </item>
-             <item>
-              <widget class="QGroupBox" name="Dev1_Ch3">
-               <property name="title">
-                <string>Ch 3</string>
-               </property>
-               <layout class="QGridLayout" name="gridLayout_20">
-                <item row="0" column="0">
-                 <widget class="QCheckBox" name="Dev1_Ch3_S1">
-                  <property name="text">
-                   <string>Fine</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="0" column="1">
-                 <widget class="QCheckBox" name="Dev1_Ch3_S2">
-                  <property name="text">
-                   <string>Fine</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="1" column="0">
-                 <widget class="QCheckBox" name="Dev1_Ch3_S3">
-                  <property name="text">
-                   <string>Fine</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="1" column="1">
-                 <widget class="QCheckBox" name="Dev1_Ch3_S4">
-                  <property name="text">
-                   <string>Fine</string>
-                  </property>
-                 </widget>
-                </item>
-               </layout>
-              </widget>
-             </item>
-             <item>
-              <widget class="QGroupBox" name="Dev1_Ch4">
-               <property name="title">
-                <string>Ch 4</string>
-               </property>
-               <layout class="QGridLayout" name="gridLayout_21">
-                <item row="0" column="0">
-                 <widget class="QCheckBox" name="Dev1_Ch4_S1">
-                  <property name="text">
-                   <string>Fine</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="0" column="1">
-                 <widget class="QCheckBox" name="Dev1_Ch4_S2">
-                  <property name="text">
-                   <string>Fine</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="1" column="0">
-                 <widget class="QCheckBox" name="Dev1_Ch4_S3">
-                  <property name="text">
-                   <string>Fine</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="1" column="1">
-                 <widget class="QCheckBox" name="Dev1_Ch4_S4">
-                  <property name="text">
-                   <string>Fine</string>
-                  </property>
-                 </widget>
-                </item>
-               </layout>
-              </widget>
-             </item>
-             <item>
-              <spacer name="verticalSpacer">
-               <property name="orientation">
-                <enum>Qt::Vertical</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>20</width>
-                 <height>40</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-            </layout>
-           </widget>
-          </widget>
-         </item>
-         <item row="7" column="2">
-          <spacer name="horizontalSpacer">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>40</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-         <item row="0" column="2" rowspan="7" colspan="4">
-          <layout class="QVBoxLayout" name="plotVLayout"/>
-         </item>
-         <item row="5" column="1" rowspan="3">
-          <widget class="QScrollArea" name="dev2_scrollarea">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Maximum" vsizetype="Expanding">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="minimumSize">
-            <size>
-             <width>240</width>
-             <height>0</height>
-            </size>
-           </property>
-           <property name="widgetResizable">
-            <bool>true</bool>
-           </property>
-           <property name="alignment">
-            <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-           </property>
-           <widget class="QWidget" name="scrollAreaWidgetContents_2">
-            <property name="geometry">
-             <rect>
-              <x>0</x>
-              <y>0</y>
-              <width>221</width>
-              <height>334</height>
-             </rect>
-            </property>
-            <layout class="QVBoxLayout" name="verticalLayout_2">
-             <property name="topMargin">
-              <number>9</number>
-             </property>
-             <item>
-              <widget class="QGroupBox" name="Dev2_Ch1">
-               <property name="title">
-                <string>Ch 1</string>
-               </property>
-               <layout class="QGridLayout" name="gridLayout_15">
-                <item row="0" column="0">
-                 <widget class="QCheckBox" name="Dev2_Ch1_S1">
-                  <property name="text">
-                   <string>Fine</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="0" column="1">
-                 <widget class="QCheckBox" name="Dev2_Ch1_S2">
-                  <property name="text">
-                   <string>Fine</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="1" column="0">
-                 <widget class="QCheckBox" name="Dev2_Ch1_S3">
-                  <property name="text">
-                   <string>Fine</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="1" column="1">
-                 <widget class="QCheckBox" name="Dev2_Ch1_S4">
-                  <property name="text">
-                   <string>Fine</string>
-                  </property>
-                 </widget>
-                </item>
-               </layout>
-              </widget>
-             </item>
-             <item>
-              <widget class="QGroupBox" name="Dev2_Ch2">
-               <property name="title">
-                <string>Ch 2</string>
-               </property>
-               <layout class="QGridLayout" name="gridLayout_16">
-                <item row="0" column="0">
-                 <widget class="QCheckBox" name="Dev2_Ch2_S1">
-                  <property name="text">
-                   <string>Fine</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="0" column="1">
-                 <widget class="QCheckBox" name="Dev2_Ch2_S2">
-                  <property name="text">
-                   <string>Fine</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="1" column="0">
-                 <widget class="QCheckBox" name="Dev2_Ch2_S3">
-                  <property name="text">
-                   <string>Fine</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="1" column="1">
-                 <widget class="QCheckBox" name="Dev2_Ch2_S4">
-                  <property name="text">
-                   <string>Fine</string>
-                  </property>
-                 </widget>
-                </item>
-               </layout>
-              </widget>
-             </item>
-             <item>
-              <widget class="QGroupBox" name="Dev2_Ch3">
-               <property name="title">
-                <string>Ch 3</string>
-               </property>
-               <layout class="QGridLayout" name="gridLayout_17">
-                <item row="0" column="0">
-                 <widget class="QCheckBox" name="Dev2_Ch3_S1">
-                  <property name="text">
-                   <string>Fine</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="1" column="0">
-                 <widget class="QCheckBox" name="Dev2_Ch3_S3">
-                  <property name="text">
-                   <string>Fine</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="1" column="1">
-                 <widget class="QCheckBox" name="Dev2_Ch3_S4">
-                  <property name="text">
-                   <string>Fine</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="0" column="1">
-                 <widget class="QCheckBox" name="Dev2_Ch3_S2">
-                  <property name="text">
-                   <string>Fine</string>
-                  </property>
-                 </widget>
-                </item>
-               </layout>
-              </widget>
-             </item>
-             <item>
-              <widget class="QGroupBox" name="Dev2_Ch4">
-               <property name="title">
-                <string>Ch 4</string>
-               </property>
-               <layout class="QGridLayout" name="gridLayout_14">
-                <item row="0" column="0">
-                 <widget class="QCheckBox" name="Dev2_Ch4_S1">
-                  <property name="text">
-                   <string>Fine</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="0" column="1">
-                 <widget class="QCheckBox" name="Dev2_Ch4_S2">
-                  <property name="text">
-                   <string>Fine</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="1" column="0">
-                 <widget class="QCheckBox" name="Dev2_Ch4_S3">
-                  <property name="text">
-                   <string>Fine</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="1" column="1">
-                 <widget class="QCheckBox" name="Dev2_Ch4_S4">
-                  <property name="text">
-                   <string>Fine</string>
-                  </property>
-                 </widget>
-                </item>
-               </layout>
-              </widget>
-             </item>
-             <item>
-              <spacer name="verticalSpacer_2">
-               <property name="orientation">
-                <enum>Qt::Vertical</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>20</width>
-                 <height>40</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-            </layout>
-           </widget>
-          </widget>
-         </item>
-         <item row="3" column="0" colspan="2">
-          <widget class="Line" name="line_3">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="0" rowspan="2">
+         <item row="3" column="0" rowspan="2">
           <widget class="QGroupBox" name="TimesgroupBox">
            <property name="enabled">
             <bool>false</bool>
@@ -920,7 +855,24 @@
            </property>
           </widget>
          </item>
-         <item row="0" column="1">
+         <item row="0" column="2" rowspan="8" colspan="4">
+          <layout class="QVBoxLayout" name="plotVLayout"/>
+         </item>
+         <item row="6" column="0">
+          <widget class="QPushButton" name="DebugButton">
+           <property name="text">
+            <string>Debug</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="0">
+          <widget class="QPushButton" name="SaveButton">
+           <property name="text">
+            <string>Save</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
           <widget class="QPushButton" name="StopButton">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
@@ -939,10 +891,13 @@
            </property>
           </widget>
          </item>
-         <item row="1" column="1">
-          <widget class="QPushButton" name="SaveButton">
+         <item row="5" column="0">
+          <widget class="QCheckBox" name="scrollcheckBox">
            <property name="text">
-            <string>Save</string>
+            <string>Autoscroll</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
            </property>
           </widget>
          </item>
