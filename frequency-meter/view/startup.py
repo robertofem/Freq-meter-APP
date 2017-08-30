@@ -138,7 +138,7 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         self.__plot_update = QtCore.QTimer()
         self.__plot_update.timeout.connect(self.update_plots)
         # Measurement engine
-        self.m_engine = measurement_engine.ThreadedMeasurementEngine()
+        self.m_engine = measurement_engine.MeasurementEngine("THREADED")
 
         # plot layout set-up.
         self.figure = plt.figure()
@@ -399,42 +399,6 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         print("debug")
         return
 
-    def debug_plot(self):
-        # Discard old graph and reset basic properties
-        self.ax.cla()
-        self.ax.grid()
-        self.ax.set_ylabel("F(Hz)", rotation= 'horizontal')
-        self.ax.yaxis.set_label_coords(-0.05, 1.04)
-        n_channels = int(self.devices[0]._dev_data['channels']['Quantity'])
-        n_signals = int(self.devices[0]._dev_data['channels']['Signals'])
-        sig_types = self.devices[0]._dev_data['channels']['SigTypes']
-        # Go over every device channel
-        for ch_index in range(n_channels):
-            # Go over every Signal in the channel and plot its value if it is
-            # specified in the corresponding CheckBox.
-            for signal_index in range(n_signals):
-                dic_index = "S{}".format(signal_index+1)
-                sig_type = sig_types[dic_index]
-                # Get new value and append it to data set.
-                value = random.gauss(10, 1+signal_index)
-                self.data['1'][ch_index][dic_index].append(value)
-                if self.cboxes[0][ch_index][dic_index].isChecked():
-                    # Draw the plot
-                    self.ax.plot(self.data['1'][ch_index][dic_index],
-                                 label="Dev-{dev} Ch-{channel} {signal}"
-                                       "".format(dev=1, channel=ch_index+1,
-                                                 signal=sig_type)
-                                )
-        handles, labels = self.ax.get_legend_handles_labels()
-        plt.legend(bbox_to_anchor=(0., 1.02, 1., 0.102), loc=3, ncol=3,
-                   mode="expand", borderaxespad=0., fontsize='xx-small')
-        if self.scrollcheckBox.isChecked():
-            if len(self.data['1']) > 100:
-                self.ax.set_xlim(len(self.data['1']) - 100, len(self.data['1']))
-        # Refresh canvas
-        self.canvas.draw()
-        logger.debug("Plot new sample: {}".format(value))
-
     def items_setup(self, conf_file, dev):
         """
         Reads the info from a conf_file and prepares the GUI items.
@@ -494,7 +458,6 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         self.log_handler.enabled[logging.WARN] = self.WarnCheck.isChecked()
         self.log_handler.enabled[logging.ERROR] = self.ErrorCheck.isChecked()
         return
-
 
 def run():
     # The QApplication object manages the application control flow and settings.
