@@ -14,6 +14,17 @@ logger = logging.getLogger("view")
 
 class FreqMeter(abc.ABC):
     @staticmethod
+    def get_vendors():
+        vendors = {}
+        for device in FreqMeter.__subclasses__():
+            vendors[device.get_vendor_name()] = {
+                "channels": device.get_channels(),
+                "signals": device.get_signals(),
+                "protocols": device.get_protocols(),
+            }
+        return vendors
+
+    @staticmethod
     def get_freq_meter(dev_path):
         with open(dev_path, 'r') as read_file:
             data = yaml.load(read_file)
@@ -26,6 +37,26 @@ class FreqMeter(abc.ABC):
             return TestFreqMeter(dev_path)
         else:
             return None
+
+    @staticmethod
+    @abc.abstractmethod
+    def get_vendor_name():
+        return ""
+
+    @staticmethod
+    @abc.abstractmethod
+    def get_channels():
+        return 0
+
+    @staticmethod
+    @abc.abstractmethod
+    def get_signals():
+        return []
+
+    @staticmethod
+    @abc.abstractmethod
+    def get_protocols():
+        return []
 
     def __init__(self, dev_path):
         # Read and load the device configuration file
@@ -84,6 +115,22 @@ class FreqMeter(abc.ABC):
 
 
 class UviFreqMeter(FreqMeter):
+    @staticmethod
+    def get_vendor_name():
+        return "Uvigo"
+
+    @staticmethod
+    def get_channels():
+        return 1
+
+    @staticmethod
+    def get_signals():
+        return ["coarse", "fine", "fineCDT"]
+
+    @staticmethod
+    def get_protocols():
+        return ["TCP/IP"]
+
     n_channels = 1
     n_signals = 3
     sig_types = {'S1': 'coarse', 'S2': 'fine', 'S3': 'fineCDT'}
@@ -152,6 +199,22 @@ class UviFreqMeter(FreqMeter):
 
 
 class AgilentFreqMeter(FreqMeter):
+    @staticmethod
+    def get_vendor_name():
+        return "Agilent"
+
+    @staticmethod
+    def get_channels():
+        return 2
+
+    @staticmethod
+    def get_signals():
+        return ["fineCDT"]
+
+    @staticmethod
+    def get_protocols():
+        return ["VISA"]
+
     n_channels = 2
     n_signals = 1
     sig_types = {'S1': 'fineCDT'}
@@ -179,6 +242,22 @@ class AgilentFreqMeter(FreqMeter):
 
 
 class TestFreqMeter(FreqMeter):
+    @staticmethod
+    def get_vendor_name():
+        return "Test"
+
+    @staticmethod
+    def get_channels():
+        return 2
+
+    @staticmethod
+    def get_signals():
+        return ["coarse", "fine", "fineCDT"]
+
+    @staticmethod
+    def get_protocols():
+        return ["Test"]
+
     n_channels = 2
     n_signals = 3
     sig_types = {'S1': 'coarse', 'S2': 'fine', 'S3': 'fineCDT'}

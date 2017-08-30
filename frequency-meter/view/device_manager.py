@@ -9,6 +9,7 @@ import yaml
 from PyQt5 import QtGui, QtCore, QtWidgets
 # Local libraries
 from view import device_interface
+from view import freqmeterdevice
 
 
 class DevManagerWindow(QtWidgets.QDialog, device_interface.Ui_DevManagerWindow):
@@ -18,13 +19,46 @@ class DevManagerWindow(QtWidgets.QDialog, device_interface.Ui_DevManagerWindow):
     def __init__(self):
         QtWidgets.QDialog.__init__(self)
         self.setupUi(self)
+        self.__signal_number_labels = [self.S1label, self.S2label,
+                                       self.S3label, self.S4label]
+        self.__signal_type_labels = [self.signal1_type, self.signal2_type,
+                                     self.signal3_type, self.signal4_type]
+        # Vendor change event
+        self.VendorSelector.currentIndexChanged.connect(self.__on_vendor_change)
+        # Protocol change event
+        self.CommProtocolBox.currentIndexChanged.connect(
+                self.__on_protocol_change)
+        # Fill vendor combo
+        self.__fill_vendor_selector()
         # Default group visibility
         self.CommPropertiesgroupBox.setVisible(False)
-        # Combo boxes change events
-        self.CommProtocolBox.currentIndexChanged.connect(self.protocol_change)
-        self.NSignalsBox.valueChanged.connect(self.nsignals_change)
         # Button box events (accept/reject)
         self.buttonBox.clicked.connect(self.handle_buttonBox_click)
+
+    def __fill_vendor_selector(self):
+        self.VendorSelector.addItems(
+                sorted(freqmeterdevice.FreqMeter.get_vendors().keys()))
+
+    def __on_vendor_change(self):
+        # Obtain vendor data
+        vendor_data = freqmeterdevice.FreqMeter.get_vendors()[
+            self.VendorSelector.currentText()]
+        # Set channel number
+        self.channel_number.setText(str(vendor_data["channels"]))
+        # Set signal number
+        signal_number = len(vendor_data["signals"])
+        self.signal_number.setText(str(signal_number))
+        # Set signal types
+        for i in range(signal_number):
+            self.__signal_number_labels[i].setVisible(True)
+            self.__signal_type_labels[i].setText(vendor_data["signals"][i])
+            self.__signal_type_labels[i].setVisible(True)
+        for i in range(signal_number, 4):
+            self.__signal_number_labels[i].setVisible(False)
+            self.__signal_type_labels[i].setVisible(False)
+        # Set protocol options
+        self.CommProtocolBox.clear()
+        self.CommProtocolBox.addItems(sorted(vendor_data["protocols"]))
 
     def handle_buttonBox_click(self, button):
         """
@@ -44,9 +78,9 @@ class DevManagerWindow(QtWidgets.QDialog, device_interface.Ui_DevManagerWindow):
         Ask the user if he/she wants to exit the DevManager window.
         """
         reply = QtWidgets.QMessageBox.question(self, 'Exit message',
-                                           "Do you want to exit?",
-                                           QtWidgets.QMessageBox.Yes,
-                                           QtWidgets.QMessageBox.No)
+                                               "Do you want to exit?",
+                                               QtWidgets.QMessageBox.Yes,
+                                               QtWidgets.QMessageBox.No)
         if reply == QtWidgets.QMessageBox.Yes:
             self.close()
         return
@@ -181,25 +215,7 @@ class DevManagerWindow(QtWidgets.QDialog, device_interface.Ui_DevManagerWindow):
         self.close()
         return
 
-    def nsignals_change(self):
-        """
-        Enable/disable the signal elements depending on spin box value.
-        """
-        self.S2label.setEnabled(self.NSignalsBox.value() > 1)
-        self.S2comboBox.setEnabled(self.NSignalsBox.value() > 1)
-        self.S3label.setEnabled(self.NSignalsBox.value() > 2)
-        self.S3comboBox.setEnabled(self.NSignalsBox.value() > 2)
-        self.S4label.setEnabled(self.NSignalsBox.value() > 3)
-        self.S4comboBox.setEnabled(self.NSignalsBox.value() > 3)
-        # Reset the combo boxes values to default when signals are disabled.
-        if self.NSignalsBox.value() < 4:
-            self.S4comboBox.setCurrentIndex(0)
-        if self.NSignalsBox.value() < 3:
-            self.S3comboBox.setCurrentIndex(0)
-        if self.NSignalsBox.value() < 2:
-            self.S2comboBox.setCurrentIndex(0)
-
-    def protocol_change(self):
+    def __on_protocol_change(self):
         """
         Update the communication labels/boxes texts and visible status.
         """
