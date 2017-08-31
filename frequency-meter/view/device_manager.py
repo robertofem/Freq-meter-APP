@@ -158,13 +158,6 @@ class DevManagerWindow(QtWidgets.QDialog, device_interface.Ui_DevManagerWindow):
             err_text = "<font color='red'>'Name' field cannot be empty!</font>"
             self.ErrorLabel.setText(err_text)
             return
-        # Check that at least one impedance configuration is checked.
-        elif (not self.Ohm50checkBox.isChecked()
-                and not self.MegaOhmcheckBox.isChecked()):
-            err_text = ("<font color='red'>At least one impedance"
-                        " must be selected!</font>")
-            self.ErrorLabel.setText(err_text)
-            return
         # Check if the device already exists and ask user for overwriting it.
         elif glob.glob("resources/devices/{}.yml".format(dev_name)):
             question = ("It already exists a device configuration with the name"
@@ -198,18 +191,18 @@ class DevManagerWindow(QtWidgets.QDialog, device_interface.Ui_DevManagerWindow):
                     ),
                 ),
             channels=dict(
-                Quantity=str(self.NChannelsBox.value()),
-                Signals=str(self.NSignalsBox.value()),
+                Quantity=str(self.channel_number.text()),
+                Signals=str(self.signal_number.text()),
                 SigTypes=dict(
-                    S1=str(self.S1comboBox.currentText()),
-                    S2=str(self.S2comboBox.currentText()),
-                    S3=str(self.S3comboBox.currentText()),
-                    S4=str(self.S4comboBox.currentText()),
+                    S1=str(self.signal1_type.text()),
+                    S2=str(self.signal2_type.text()),
+                    S3=str(self.signal3_type.text()),
+                    S4=str(self.signal4_type.text()),
                     ),
                 ),
             impedance=dict(
-                R50Ohm=str(self.Ohm50checkBox.isChecked()),
-                R1MOhm=str(self.MegaOhmcheckBox.isChecked()),
+                R50Ohm=str(self.impedance_50.isChecked()),
+                R1MOhm=str(self.impedance_1m.isChecked()),
                 ),
             )
         # If the file already exists, remove and create it again with the
@@ -279,17 +272,20 @@ class DevManagerWindow(QtWidgets.QDialog, device_interface.Ui_DevManagerWindow):
             self.CommPropertiesgroupBox.setVisible(True)
             # Property 1 settings.
             self.CommLabel_1.setVisible(True)
-            self.CommLabel_1.setText("VISA ID:")
+            self.CommLabel_1.setText("Ethernet Board:")
             self.CommText_1.setVisible(True)
             # Property 2 settings.
-            self.CommLabel_2.setVisible(False)
-            self.CommText_2.setVisible(False)
+            self.CommLabel_2.setVisible(True)
+            self.CommLabel_2.setText("IP:")
+            self.CommText_2.setVisible(True)
             # Property 3 settings.
-            self.CommLabel_3.setVisible(False)
-            self.CommText_3.setVisible(False)
+            self.CommLabel_3.setVisible(True)
+            self.CommLabel_3.setText("LAN Device:")
+            self.CommText_3.setVisible(True)
             # Property 4 settings.
-            self.CommLabel_4.setVisible(False)
-            self.CommText_4.setVisible(False)
+            self.CommLabel_4.setVisible(True)
+            self.CommLabel_4.setText("GPIB Address:")
+            self.CommText_4.setVisible(True)
         elif self.CommProtocolBox.currentText() == "Test":
             self.CommPropertiesgroupBox.setVisible(False)
             # Property 1 settings.
