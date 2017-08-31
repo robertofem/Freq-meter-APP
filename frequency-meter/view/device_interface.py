@@ -166,6 +166,7 @@ class Ui_DevManagerWindow(object):
         self.impedance_50.setEnabled(True)
         self.impedance_50.setFocusPolicy(QtCore.Qt.NoFocus)
         self.impedance_50.setCheckable(True)
+        self.impedance_50.setChecked(False)
         self.impedance_50.setAutoExclusive(False)
         self.impedance_50.setObjectName("impedance_50")
         self.gridLayout_7.addWidget(self.impedance_50, 0, 0, 1, 1)

@@ -3,7 +3,6 @@
 # Standard libraries
 import glob
 import os
-import sys
 import yaml
 # Third party libraries
 from PyQt5 import QtGui, QtCore, QtWidgets
@@ -33,8 +32,6 @@ class DevManagerWindow(QtWidgets.QDialog, device_interface.Ui_DevManagerWindow):
         self.impedance_1m.setAttribute(QtCore.Qt.WA_TransparentForMouseEvents)
         # Fill vendor combo
         self.__fill_vendor_selector()
-        # Default group visibility
-        self.CommPropertiesgroupBox.setVisible(False)
         # Button box events (accept/reject)
         self.buttonBox.clicked.connect(self.handle_buttonBox_click)
 
