@@ -16,11 +16,12 @@ class FreqMeter(abc.ABC):
     @staticmethod
     def get_vendors():
         vendors = {}
-        for device in FreqMeter.__subclasses__():
-            vendors[device.get_vendor_name()] = {
-                "channels": device.get_channels(),
-                "signals": device.get_signals(),
-                "protocols": device.get_protocols(),
+        for freq_meter_class in FreqMeter.__subclasses__():
+            vendors[freq_meter_class.get_vendor_name()] = {
+                "channels": freq_meter_class.get_channels(),
+                "signals": freq_meter_class.get_signals(),
+                "protocols": freq_meter_class.get_protocols(),
+                "impedances": freq_meter_class.get_impedances(),
             }
         return vendors
 
@@ -56,6 +57,11 @@ class FreqMeter(abc.ABC):
     @staticmethod
     @abc.abstractmethod
     def get_protocols():
+        return []
+
+    @staticmethod
+    @abc.abstractmethod
+    def get_impedances():
         return []
 
     def __init__(self, dev_path):
@@ -130,6 +136,10 @@ class UviFreqMeter(FreqMeter):
     @staticmethod
     def get_protocols():
         return ["TCP/IP"]
+
+    @staticmethod
+    def get_impedances():
+        return ["50", "1M"]
 
     n_channels = 1
     n_signals = 3
@@ -215,6 +225,10 @@ class AgilentFreqMeter(FreqMeter):
     def get_protocols():
         return ["VISA"]
 
+    @staticmethod
+    def get_impedances():
+        return ["50", "1M"]
+
     n_channels = 2
     n_signals = 1
     sig_types = {'S1': 'fineCDT'}
@@ -257,6 +271,10 @@ class TestFreqMeter(FreqMeter):
     @staticmethod
     def get_protocols():
         return ["Test"]
+
+    @staticmethod
+    def get_impedances():
+        return ["50", "1M"]
 
     n_channels = 2
     n_signals = 3

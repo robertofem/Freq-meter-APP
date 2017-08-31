@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>714</width>
-    <height>538</height>
+    <height>578</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -257,11 +257,20 @@
      </property>
      <layout class="QGridLayout" name="gridLayout_7">
       <item row="0" column="0">
-       <widget class="QCheckBox" name="Ohm50checkBox">
+       <widget class="QCheckBox" name="impedance_50">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="focusPolicy">
+         <enum>Qt::NoFocus</enum>
+        </property>
         <property name="text">
          <string>50 Ω</string>
         </property>
         <property name="checkable">
+         <bool>true</bool>
+        </property>
+        <property name="checked">
          <bool>false</bool>
         </property>
         <property name="autoExclusive">
@@ -270,12 +279,18 @@
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="QCheckBox" name="MegaOhmcheckBox">
+       <widget class="QCheckBox" name="impedance_1m">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="focusPolicy">
+         <enum>Qt::NoFocus</enum>
+        </property>
         <property name="text">
          <string>1 MΩ</string>
         </property>
         <property name="checkable">
-         <bool>false</bool>
+         <bool>true</bool>
         </property>
         <property name="autoExclusive">
          <bool>false</bool>

@@ -28,6 +28,9 @@ class DevManagerWindow(QtWidgets.QDialog, device_interface.Ui_DevManagerWindow):
         # Protocol change event
         self.CommProtocolBox.currentIndexChanged.connect(
                 self.__on_protocol_change)
+        # Read only impedance checkboxes
+        self.impedance_50.setAttribute(QtCore.Qt.WA_TransparentForMouseEvents)
+        self.impedance_1m.setAttribute(QtCore.Qt.WA_TransparentForMouseEvents)
         # Fill vendor combo
         self.__fill_vendor_selector()
         # Default group visibility
@@ -56,6 +59,15 @@ class DevManagerWindow(QtWidgets.QDialog, device_interface.Ui_DevManagerWindow):
         for i in range(signal_number, 4):
             self.__signal_number_labels[i].setVisible(False)
             self.__signal_type_labels[i].setVisible(False)
+        # Set impedances
+        if "50" in vendor_data["impedances"]:
+            self.impedance_50.setChecked(True)
+        else:
+            self.impedance_50.setChecked(False)
+        if "1M" in vendor_data["impedances"]:
+            self.impedance_1m.setChecked(True)
+        else:
+            self.impedance_1m.setChecked(False)
         # Set protocol options
         self.CommProtocolBox.clear()
         self.CommProtocolBox.addItems(sorted(vendor_data["protocols"]))
