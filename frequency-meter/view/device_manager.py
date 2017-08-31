@@ -116,22 +116,11 @@ class DevManagerWindow(QtWidgets.QDialog, device_interface.Ui_DevManagerWindow):
                 return
         # Load general properties to interface.
         self.DevNameText.setText(dev_data['general']['Name'])
-        v_index = self.VendorSelector.findText(dev_data['Vendor'])
+        v_index = self.VendorSelector.findText(dev_data['general']['Vendor'])
         self.VendorSelector.setCurrentIndex(v_index)
         self.DevModelText.setText(dev_data['general']['Model'])
         self.DevSerialNText.setText(dev_data['general']['Serial_N'])
         self.DevFirmVersionText.setText(dev_data['general']['FirmVersion'])
-        # Load channel properties to interface.
-        self.NChannelsBox.setValue(int(dev_data['channels']['Quantity']))
-        self.NSignalsBox.setValue(int(dev_data['channels']['Signals']))
-        indx1 = self.S1comboBox.findText(dev_data['channels']['SigTypes']['S1'])
-        indx2 = self.S2comboBox.findText(dev_data['channels']['SigTypes']['S2'])
-        indx3 = self.S3comboBox.findText(dev_data['channels']['SigTypes']['S3'])
-        indx4 = self.S4comboBox.findText(dev_data['channels']['SigTypes']['S4'])
-        self.S1comboBox.setCurrentIndex(indx1)
-        self.S2comboBox.setCurrentIndex(indx2)
-        self.S3comboBox.setCurrentIndex(indx3)
-        self.S4comboBox.setCurrentIndex(indx4)
         # Load communication properties to interface.
         c_index = self.CommProtocolBox.findText(dev_data['communications']
                                                         ['Protocol'])
@@ -144,10 +133,6 @@ class DevManagerWindow(QtWidgets.QDialog, device_interface.Ui_DevManagerWindow):
                                         ['Properties']['CommProp3'])
         self.CommText_4.setText(dev_data['communications']
                                         ['Properties']['CommProp4'])
-        # Load impedance properties to interface.
-        self.Ohm50checkBox.setChecked(dev_data['impedance']['R50Ohm'] == 'True')
-        self.MegaOhmcheckBox.setChecked(dev_data['impedance']['R1MOhm']
-                                        == 'True')
         return
 
     def save_device(self):

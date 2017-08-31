@@ -1,10 +1,10 @@
 channels:
   Quantity: '2'
   SigTypes:
-    S1: Coarse
-    S2: Fine
-    S3: Fine-CDT
-    S4: <None>
+    S1: coarse
+    S2: fine
+    S3: fineCDT
+    S4: ''
   Signals: '3'
 communications:
   Properties:
@@ -21,4 +21,4 @@ general:
   Vendor: Test
 impedance:
   R1MOhm: 'True'
-  R50Ohm: 'False'
+  R50Ohm: 'True'

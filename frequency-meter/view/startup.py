@@ -441,7 +441,7 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
                     dic_index = "S{}".format(c_idx+1)
                     sig_type = dev_data['channels']['SigTypes'][dic_index]
                     checkbox.setText(sig_type)
-                    if sig_type != "<None>":
+                    if sig_type:
                         active_checkboxes[g_idx][dic_index] = checkbox
                         checkbox.setEnabled(True)
                     else:
