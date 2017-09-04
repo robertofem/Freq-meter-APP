@@ -88,50 +88,35 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         # Run the windows initialization routines.
         self.setupUi(self)
         self.popup = None
-        self.update_devices_list()
         # Configure the Menu bar
         self.menuTools.triggered[QtWidgets.QAction].connect(self.tools_action)
         # Configure the logger, assigning an instance of AppLogHandler.
         self.log_handler = AppLogHandler(self.LoggerBrowser)
         logger.addHandler(self.log_handler)
         logger.info("Initialized the Frequency-Meter Application")
-        # Test buttons
-        self.StartButton.clicked.connect(self.start_plot)
-        self.StopButton.clicked.connect(self.stop_plot)
-        self.DebugButton.clicked.connect(self.debug)
         # Log console level selection buttons
         self.DebugCheck.clicked.connect(self.update_logger_level)
         self.InfoCheck.clicked.connect(self.update_logger_level)
         self.WarnCheck.clicked.connect(self.update_logger_level)
         self.ErrorCheck.clicked.connect(self.update_logger_level)
-        # Status labels initial configuration
-        self.status_label_1.setVisible(False)
-        self.status_label_2.setVisible(False)
-        self.connected_label_1.setVisible(False)
-        self.connected_label_2.setVisible(False)
-        self.devname_label_l_1.setVisible(False)
-        self.devname_label_l_2.setVisible(False)
-        # Measurements channels labels initial configuration
-        self.dev1_scrollarea.setVisible(True)
-        self.dev2_scrollarea.setVisible(True)
-        self.dev1_scrollarea.setFixedHeight(145)
-        self.dev2_scrollarea.setFixedHeight(145)
-        # Device manager buttons
-        self.LoadDeviceButton.clicked.connect(self.load_device)
-        self.LoadDeviceButton.clicked.connect(self.load_device)
-        # Devices buttons
-        self.removeButton_1.clicked.connect(lambda: self.remove_device(dev=1))
-        self.removeButton_2.clicked.connect(lambda: self.remove_device(dev=2))
-        self.connectButton_1.clicked.connect(lambda: self.connect_device(dev=1))
-        self.connectButton_2.clicked.connect(lambda: self.connect_device(dev=2))
-        # Lists containing objects manipulated at connect and remove events.
-        self.connect_buttons = [self.connectButton_1, self.connectButton_2]
-        self.remove_buttons = [self.removeButton_1, self.removeButton_2]
-        self.devname_labels_l = [self.devname_label_l_1, self.devname_label_l_2]
-        self.devname_labels_r = [self.devname_label_r_1, self.devname_label_r_2]
-        self.status_labels = [self.status_label_1, self.status_label_2]
-        self.connected_labels = [self.connected_label_1, self.connected_label_2]
+        # Connect main buttons to its functions
+        self.StartButton.clicked.connect(self.start_plot)
+        self.StopButton.clicked.connect(self.stop_plot)
+        self.DebugButton.clicked.connect(self.debug)
+        self.ConnectDevButton1.clicked.connect(self.connect_device1)
+        self.ConnectDevButton2.clicked.connect(self.connect_device2)
+        # Lists containing graphical objects associated to different device
         self.device_scrollareas = [self.dev1_scrollarea, self.dev2_scrollarea]
+        self.DevComboBox=[self.DeviceComboBox1, self.DeviceComboBox2]
+        self.ConnectButton=[self.ConnectDevButton1, self.ConnectDevButton2]
+        #Setup of the graphic elemnts in those Lists
+        for slot in range(2):
+            self.device_scrollareas[slot].setVisible(True)
+            self.device_scrollareas[slot].setEnabled(False)
+            self.device_scrollareas[slot].setFixedHeight(145)
+            self.updateDevCombobox(self.DevComboBox[slot])
+        #Make measurment times visible
+        self.TimesgroupBox.setEnabled(True)
         # Instrument devices list.
         self.devices = [None, None]
         # Qt timer set-up for updating the plots.
@@ -139,13 +124,14 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         self.timer.timeout.connect(self.update_plots)
         #Measuremnt engine
         self.m_engine = measurement_engine.ThreadedMeasurementEngine(logger)
-
         # plot layout set-up.
         self.figure = plt.figure()
         self.figure.patch.set_alpha(0)
         self.canvas = FigureCanvas(self.figure)
         self.toolbar = NavTbar(self.canvas, self)
-        self.plotVLayout.addWidget(self.toolbar)
+        self.plotControlHLayout.addWidget(self.toolbar)
+        spacer1 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.plotControlHLayout.addItem(spacer1)
         self.plotVLayout.addWidget(self.canvas)
         self.ax = self.figure.add_subplot(111)
         self.figure.subplots_adjust(top=0.9, bottom=0.1, left=0.13, right=0.95)
@@ -157,19 +143,39 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         self.cboxes = [[], []] #list (channel) of lists (signal)
         self.sample_counter = 0
 
-    def load_device(self, cmbox):
+    def connect_device1(self):
+        if self.ConnectButton[0].text() == "Connect":
+            self.connect_device(0)
+        else:
+            self.disconnect_device(0)
+        return
+
+    def connect_device2(self):
+        if self.ConnectButton[1].text() == "Connect":
+            self.connect_device(1)
+        else:
+            self.disconnect_device(1)
+        return
+
+    def connect_device(self, slot):
         """
-        Load the selected device to the first available slot.
+        Load device in its corresponding slot and try to connect to it.
         """
-        device_name = self.DeviceComboBox.currentText()
+        device_name = self.DevComboBox[slot].currentText()
         # Return if the ComboBox has not a valid item selected.
         if device_name == "<None>":
             logger.warning("No device selected")
             return
-        #elif device_name in (self.device_labels[0].text(),
-        #                     self.device_labels[1].text()):
-        #    logger.warning("Selected device is already loaded")
-        #    return
+        else:
+            if slot==0:
+                other_slot = 1
+            else:
+                other_slot = 0
+            if device_name == self.DevComboBox[other_slot].currentText():
+                logger.warning(
+                "Device {dev} is already selected in the other slot"
+                .format(dev=device_name))
+                return
 
         # Deal with the situation where the conf file is deleted since
         # the last time the list was refreshed.
@@ -178,41 +184,62 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         if not glob.glob(dev_path):
             logger.warning("Selected device does not longer exist")
             return
-        self.TimesgroupBox.setEnabled(True)
-        # Look for the first available slot. Return if both are being used.
-        if self.devices[0] is None:
-            dev = 1
-        elif self.devices[1] is None:
-            dev = 2
+
+        #Disconnect and delete the old device in this slot
+        if self.devices[slot] != None:
+            #Disconnect first
+            if self.devices[slot].is_connected():
+                self.devices[slot].disconnect()
+        self.devices[slot] = None
+        #Disable the scroll
+        self.device_scrollareas[slot].setEnabled(False)
+
+        #Create a new device and try to connect to it
+        new_device = freqmeterdevice.FreqMeter.get_freq_meter(dev_path)
+        connected = new_device.connect()
+        if connected:
+            logger.info("Connected to device {dev}".format(dev=device_name))
+            ready = new_device.is_ready()
+            if not ready:
+                logger.error("Device {dev} connected but not responding ACK"
+                .format(dev=device_name))
+                return
         else:
-            logger.warning("There are 2 devices already loaded!")
-            return
-        self.devices[dev-1] = freqmeterdevice.FreqMeter.get_freq_meter(dev_path)
+            logger.error("Unable to connect to device {dev}"
+            .format(dev=device_name))
 
-        if self.devices[0] is None:
-            logger.debug("self.device[0] is None")
+        #Add device to the list of available devices to do measurements
+        self.devices[slot] = new_device
 
-        logger.info("Loaded the device {dev}".format(dev=device_name))
         # Measurement area items set-up
-        self.device_scrollareas[dev-1].setVisible(True)
-        self.cboxes[dev-1] = self.items_setup(dev_path,dev)
-        # Devices manager area items set-up
-        self.devname_labels_l[dev-1].setVisible(True)
-        self.devname_labels_r[dev-1].setText(device_name)
-        self.status_labels[dev-1].setVisible(True)
-        self.connected_labels[dev-1].setVisible(True)
-        self.connected_labels[dev-1].setText("<font color='red'>"
-                                             "not connected</font>")
+        self.device_scrollareas[slot].setEnabled(True)
+        self.cboxes[slot] = self.items_setup(dev_path,slot+1)
+
         # Reset the ComboBox to the default value.
-        self.DeviceComboBox.setCurrentIndex(0)
-        # If a device is already loaded at every slot, disable
-        # the load button.
-        if all(dev is not None for dev in self.devices):
-            self.LoadDeviceButton.setEnabled(False)
-            self.DeviceComboBox.setEnabled(False)
-        self.remove_buttons[dev-1].setEnabled(True)
-        self.connect_buttons[dev-1].setEnabled(True)
+        #self.DevComboBox[slot].setCurrentIndex(0)
+
+        #Change the button text to Disconnect
+        self.ConnectButton[slot].setText("Disconnect")
+
         return
+
+    def disconnect_device(self, slot):
+        """
+        Disconnect device and remove from slot.
+        """
+        #Disconnect and delete the old device in this slot
+        if self.devices[slot] != None:
+            #Disconnect first
+            if self.devices[slot].is_connected():
+                self.devices[slot].disconnect()
+                device_name = self.DevComboBox[slot].currentText()
+                logger.info("Disconnected from device {dev}"
+                .format(dev=device_name))
+        self.devices[slot] = None
+        #Disable the scroll
+        self.device_scrollareas[slot].setEnabled(False)
+        #Change the button text to Disconnect
+        self.ConnectButton[slot].setText("Connect")
 
 
     def tools_action(self,q):
@@ -226,7 +253,9 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         self.popup = device_manager.DevManagerWindow()
         self.popup.exec_()
         self.popup = None;
-        self.update_devices_list()
+        for slot in range(2):
+            self.updateDevCombobox(self.DevComboBox[slot])
+        logger.info("Updated devices list")
         return
 
     def open_calib(self):
@@ -236,46 +265,14 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         self.popup = None;
         return
 
-    def update_devices_list(self):
+    def updateDevCombobox(self, comboBox):
         devices_list = [os.path.basename(match)[:-4] for match in
                         glob.glob('resources/devices/*yml')]
-        self.DeviceComboBox.clear()
-        self.DeviceComboBox.addItem('<None>')
-        self.DeviceComboBox.addItems(devices_list)
-        logger.info("Updated devices list")
+        comboBox.clear()
+        comboBox.addItem('<None>')
+        comboBox.addItems(devices_list)
         return
 
-    def connect_device(self, dev):
-        """
-        Connect or disconnect a device depending on its previous state.
-
-        :param int dev: number of the target device. its corresponding
-        list index is one value smaller, as it is 0-indexed.
-        """
-        if self.devices[dev-1].is_connected():
-            # disconnect device.
-            connected = self.devices[dev-1].disconnect()
-            if not connected:
-                self.connect_buttons[dev-1].setText("connect")
-                self.connected_labels[dev-1].setText(
-                        "<font color='red'>not connected</font>")
-        else:
-            # Try a connection and update status label and connect button text.
-            connected = self.devices[dev-1].connect()
-            if connected:
-                ready = self.devices[dev - 1].is_ready()
-                if ready:
-                    self.connected_labels[dev-1].setText(
-                            "<font color='green'>connected</font>")
-                    self.connect_buttons[dev-1].setText("disconnect")
-                else:
-                    self.connected_labels[dev-1].setText(
-                            "<font color='orange'>connected. No ACK</font>")
-                    self.connect_buttons[dev-1].setText("disconnect")
-            else:
-                self.connected_labels[dev-1].setText(
-                        "<font color='red'>not connected</font>")
-        return
 
     def remove_device(self, dev):
         if self.devices[dev-1].is_connected():
