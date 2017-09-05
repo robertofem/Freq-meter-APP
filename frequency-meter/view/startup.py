@@ -104,15 +104,15 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         self.ConnectDevButton2.clicked.connect(self.connect_device2)
         # Lists containing graphical objects associated to different device
         self.device_scrollareas = [self.dev1_scrollarea, self.dev2_scrollarea]
-        self.DevComboBox=[self.DeviceComboBox1, self.DeviceComboBox2]
-        self.ConnectButton=[self.ConnectDevButton1, self.ConnectDevButton2]
-        #Setup of the graphic elemnts in those Lists
+        self.DevComboBox = [self.DeviceComboBox1, self.DeviceComboBox2]
+        self.ConnectButton = [self.ConnectDevButton1, self.ConnectDevButton2]
+        # Setup of the graphic elements in those Lists
         for slot in range(2):
             self.device_scrollareas[slot].setVisible(True)
             self.device_scrollareas[slot].setEnabled(False)
             self.device_scrollareas[slot].setFixedHeight(145)
             self.updateDevCombobox(self.DevComboBox[slot])
-        #Make measurment times visible
+        # Make measurement times visible
         self.TimesgroupBox.setEnabled(True)
         # Instrument devices list.
         self.devices = [None, None]
@@ -129,7 +129,8 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         self.canvas = FigureCanvas(self.figure)
         self.toolbar = NavTbar(self.canvas, self)
         self.plotControlHLayout.addWidget(self.toolbar)
-        spacer1 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        spacer1 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding,
+                                        QtWidgets.QSizePolicy.Minimum)
         self.plotControlHLayout.addItem(spacer1)
         self.plotVLayout.addWidget(self.canvas)
         self.ax = self.figure.add_subplot(111)
@@ -169,14 +170,14 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
             logger.warning("No device selected")
             return
         else:
-            if slot==0:
+            if slot == 0:
                 other_slot = 1
             else:
                 other_slot = 0
             if device_name == self.DevComboBox[other_slot].currentText():
                 logger.warning(
-                "Device {dev} is already selected in the other slot"
-                .format(dev=device_name))
+                        "Device {} is already selected in the other slot"
+                        "".format(device_name))
                 return
 
         # Deal with the situation where the conf file is deleted since
@@ -187,40 +188,40 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
             logger.warning("Selected device does not longer exist")
             return
 
-        #Disconnect and delete the old device in this slot
-        if self.devices[slot] != None:
-            #Disconnect first
+        # Disconnect and delete the old device in this slot
+        if self.devices[slot]:
+            # Disconnect first
             if self.devices[slot].is_connected():
                 self.devices[slot].disconnect()
         self.devices[slot] = None
-        #Disable the scroll
+        # Disable the scroll
         self.device_scrollareas[slot].setEnabled(False)
 
-        #Create a new device and try to connect to it
+        # Create a new device and try to connect to it
         new_device = freqmeterdevice.FreqMeter.get_freq_meter(dev_path)
         connected = new_device.connect()
         if connected:
-            logger.info("Connected to device {dev}".format(dev=device_name))
+            logger.info("Connected to device {}".format(device_name))
             ready = new_device.is_ready()
             if not ready:
-                logger.error("Device {dev} connected but not responding ACK"
-                .format(dev=device_name))
+                logger.error(
+                        "Device {} connected but not responding ACK".format(
+                                device_name))
                 return
         else:
-            logger.error("Unable to connect to device {dev}"
-            .format(dev=device_name))
+            logger.error("Unable to connect to device {}".format(device_name))
 
-        #Add device to the list of available devices to do measurements
+        # Add device to the list of available devices to do measurements
         self.devices[slot] = new_device
 
         # Measurement area items set-up
         self.device_scrollareas[slot].setEnabled(True)
-        self.cboxes[slot] = self.items_setup(dev_path,slot+1)
+        self.cboxes[slot] = self.items_setup(dev_path, slot+1)
 
         # Reset the ComboBox to the default value.
-        #self.DevComboBox[slot].setCurrentIndex(0)
+        # self.DevComboBox[slot].setCurrentIndex(0)
 
-        #Change the button text to Disconnect
+        # Change the button text to Disconnect
         self.ConnectButton[slot].setText("Disconnect")
 
         return
@@ -229,22 +230,20 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         """
         Disconnect device and remove from slot.
         """
-        #Disconnect and delete the old device in this slot
-        if self.devices[slot] != None:
-            #Disconnect first
+        # Disconnect and delete the old device in this slot
+        if self.devices[slot]:
+            # Disconnect first
             if self.devices[slot].is_connected():
                 self.devices[slot].disconnect()
                 device_name = self.DevComboBox[slot].currentText()
-                logger.info("Disconnected from device {dev}"
-                .format(dev=device_name))
+                logger.info("Disconnected from device {}".format(device_name))
         self.devices[slot] = None
-        #Disable the scroll
+        # Disable the scroll
         self.device_scrollareas[slot].setEnabled(False)
-        #Change the button text to Disconnect
+        # Change the button text to Disconnect
         self.ConnectButton[slot].setText("Connect")
 
-
-    def tools_action(self,q):
+    def tools_action(self, q):
         if q.text() == "Device manager":
             self.open_dev_mngr()
         elif q.text() == "FPGA frequency meter calibration":
@@ -254,7 +253,7 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         logger.debug("Opening Device Manager pop-up window")
         self.popup = device_manager.DevManagerWindow()
         self.popup.exec_()
-        self.popup = None;
+        self.popup = None
         for slot in range(2):
             self.updateDevCombobox(self.DevComboBox[slot])
         logger.info("Updated devices list")
@@ -273,28 +272,6 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         comboBox.clear()
         comboBox.addItem('<None>')
         comboBox.addItems(devices_list)
-        return
-
-
-    def remove_device(self, dev):
-        if self.devices[dev-1].is_connected():
-            self.connect_device(dev=dev)
-        self.devices[dev-1] = None
-        logger.info("Device {} removed".format(dev))
-        # Update the text of corresponding labels and buttons.
-        self.status_labels[dev-1].setVisible(False)
-        self.connected_labels[dev-1].setVisible(False)
-        self.devname_labels_l[dev-1].setVisible(False)
-        self.devname_labels_r[dev-1].setText("")
-        self.LoadDeviceButton.setEnabled(True)
-        self.DeviceComboBox.setEnabled(True)
-        self.remove_buttons[dev-1].setEnabled(False)
-        self.connect_buttons[dev-1].setEnabled(False)
-        # Measurement area items set-up
-        self.device_scrollareas[dev-1].setVisible(False)
-        # Disable the times group box if any device is loaded.
-        if all(dev is None for dev in self.devices):
-            self.TimesgroupBox.setEnabled(False)
         return
 
     def start_plot(self):
@@ -402,7 +379,7 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         scrollarea_name = "dev{}_scrollarea".format(dev)
         dev_sa = ""
         # Find the ScrollArea corresponding to the input device number.
-        for sa in self.measurement_groupBox.findChildren(QtWidgets.QScrollArea):
+        for sa in self.findChildren(QtWidgets.QScrollArea):
             if sa.objectName() == scrollarea_name:
                 dev_sa = sa
         if dev_sa == "":
@@ -442,6 +419,7 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         self.log_handler.enabled[logging.WARN] = self.WarnCheck.isChecked()
         self.log_handler.enabled[logging.ERROR] = self.ErrorCheck.isChecked()
         return
+
 
 def run():
     # The QApplication object manages the application control flow and settings.
