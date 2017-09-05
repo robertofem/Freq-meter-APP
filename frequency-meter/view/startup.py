@@ -384,7 +384,7 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
                 dev_sa = sa
         if dev_sa == "":
             logger.debug("No ScrollArea detected with name {}".format(dev_sa))
-            return (0, 0)
+            return []
         # Open and load the input device configuration file.
         with open(conf_file, 'r') as read_file:
             dev_data = yaml.load(read_file)
@@ -410,7 +410,7 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
             # Hide the GroupBox if is not specified at the configuration file.
             else:
                 group.setVisible(False)
-        return (active_checkboxes)
+        return active_checkboxes
 
     def update_logger_level(self):
         """Evaluate the check boxes states and update logger level."""

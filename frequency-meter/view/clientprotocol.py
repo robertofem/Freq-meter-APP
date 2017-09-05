@@ -82,6 +82,7 @@ class TCPIPClient(Client):
             reply = ""
             success = False
         else:
+            reply = reply.decode('utf-8')
             success = True
         return success, reply
 
