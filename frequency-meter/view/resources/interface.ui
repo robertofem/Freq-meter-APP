@@ -348,13 +348,6 @@
              </property>
             </spacer>
            </item>
-           <item>
-            <widget class="QPushButton" name="DebugButton">
-             <property name="text">
-              <string>Debug</string>
-             </property>
-            </widget>
-           </item>
           </layout>
          </item>
          <item>
@@ -513,11 +506,6 @@
              </widget>
             </item>
            </layout>
-           <zorder>radio_dev1_ch1</zorder>
-           <zorder>radio_dev1_ch2</zorder>
-           <zorder>radio_dev1_ch2</zorder>
-           <zorder>radio_dev1_ch3</zorder>
-           <zorder>radio_dev1_ch4</zorder>
           </widget>
          </item>
          <item>
@@ -554,8 +542,8 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>221</width>
-                <height>334</height>
+                <width>223</width>
+                <height>386</height>
                </rect>
               </property>
               <layout class="QVBoxLayout" name="verticalLayout">
@@ -849,8 +837,8 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>221</width>
-                <height>334</height>
+                <width>223</width>
+                <height>386</height>
                </rect>
               </property>
               <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -1051,7 +1039,7 @@
      <x>0</x>
      <y>0</y>
      <width>1100</width>
-     <height>21</height>
+     <height>27</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">

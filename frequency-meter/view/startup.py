@@ -99,7 +99,6 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         # Connect main buttons to its functions
         self.StartButton.clicked.connect(self.start_plot)
         self.StopButton.clicked.connect(self.stop_plot)
-        self.DebugButton.clicked.connect(self.debug)
         self.ConnectDevButton1.clicked.connect(self.connect_device1)
         self.ConnectDevButton2.clicked.connect(self.connect_device2)
         # Lists containing graphical objects associated to different device
@@ -354,10 +353,6 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         self.__plot_update.stop()
         self.m_engine.stop()
         logger.debug("Pressed stop button")
-        return
-
-    def debug(self):
-        print("debug")
         return
 
     def items_setup(self, conf_file, dev):
