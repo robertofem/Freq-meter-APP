@@ -2,16 +2,15 @@
 """Application main executable, for initializing the whole program"""
 # Standard libraries
 import glob
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavTbar
-import matplotlib.pyplot as plt
 import logging
 import os
 import sys
-import time
-import yaml
 # Third party libraries
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavTbar
+import matplotlib.pyplot as plt
 from PyQt5 import QtGui, QtCore, QtWidgets
+import yaml
 # Local libraries
 from view import device_manager
 from view import calibration
@@ -19,8 +18,6 @@ from view import freqmeterdevice
 from view import measurement_engine
 from view import instrument_data
 from view import interface
-# library for testing
-import random
 
 # Create the application logger, with a previously defined configuration.
 logger = logging.getLogger('view')
@@ -119,11 +116,13 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         self.TimesgroupBox.setEnabled(True)
         # Instrument devices list.
         self.devices = [None, None]
+
         # Qt timer set-up for updating the plots.
-        self.timer = QtCore.QTimer()
-        self.timer.timeout.connect(self.update_plots)
-        #Measuremnt engine
-        self.m_engine = measurement_engine.ThreadedMeasurementEngine(logger)
+        self.__plot_update = QtCore.QTimer()
+        self.__plot_update.timeout.connect(self.update_plots)
+        # Measurement engine
+        self.m_engine = measurement_engine.MeasurementEngine(threaded=False)
+
         # plot layout set-up.
         self.figure = plt.figure()
         self.figure.patch.set_alpha(0)
@@ -136,11 +135,14 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         self.ax = self.figure.add_subplot(111)
         self.figure.subplots_adjust(top=0.9, bottom=0.1, left=0.13, right=0.95)
         self.ax.grid()
-        self.ax.set_ylabel("F(Hz)", rotation= 'horizontal')
+        self.ax.set_ylabel("F(Hz)", rotation='horizontal')
         self.ax.yaxis.set_label_coords(-0.05, 1.04)
+
         # Plot data
-        self.data = [] #list of InstrumentData
-        self.cboxes = [[], []] #list (channel) of lists (signal)
+        # list of InstrumentData
+        self.data = []
+        # list (channel) of lists (signal)
+        self.cboxes = [[], []]
         self.sample_counter = 0
 
     def connect_device1(self):
@@ -262,7 +264,7 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         logger.debug("Opening FPGA device Calibration pop-up window")
         self.popup = calibration.CalibWindow()
         self.popup.exec_()
-        self.popup = None;
+        self.popup = None
         return
 
     def updateDevCombobox(self, comboBox):
@@ -296,81 +298,70 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         return
 
     def start_plot(self):
-        #check which devices will be loaded and connected
-        #they will be used to measure and plot
-        self.dev_measure = []
+        # Check which devices will be loaded and connected
+        # They will be used to measure and plot
+        self.measuring_devices = []
         for device in self.devices:
-            if device != None:
+            if device:
                 if not device.is_connected():
                     logger.warning("Some device is not connected")
                     return
-                self.dev_measure.append(device)
+                self.measuring_devices.append(device)
 
         # Generate data structure to store plotting values
         self.data = []
-        for index in range(len(self.dev_measure)):
-            self.data.append( instrument_data.InstrumentData(
-                n_channels = 1,
-                n_signals = self.dev_measure[index].n_signals,
-                sig_types = self.dev_measure[index].sig_types
-            ))
+        for measuring_device in self.measuring_devices:
+            self.data.append(instrument_data.InstrumentData(
+                n_channels=1, n_signals=measuring_device.n_signals,
+                sig_types=measuring_device.sig_types))
         logger.debug("Cleaning older stored data")
 
         # Start the measurement engine
         sample_time = self.SampleTimeBox.value()
         fetch_time = self.FetchTimeBox.value()
-        self.m_engine.start(self.dev_measure, fetch_time, sample_time)
+        self.m_engine.start(self.measuring_devices, fetch_time, sample_time)
         logger.debug("Measurement Starts")
 
-        #Start the timer to update plots
-        self.timer.start(500) #65ms=15 updates per second (enough for human eye)
+        # Start the timer to update plots
+        # 65ms=15 updates per second (enough for human eye)
+        self.__plot_update.start(500)
         logger.debug("Plotting Starts")
         return
 
     def update_plots(self):
-        # Get measuremnts from measurement engine
-        new_samples = self.m_engine.get_values()
+        # Get measurements
+        self.ax.cla()
+        self.ax.grid()
+        self.ax.set_ylabel("F(Hz)", rotation='horizontal')
+        self.ax.yaxis.set_label_coords(-0.03, 1.04)
+        # Remove exponential notation in y axis
+        self.ax.get_yaxis().get_major_formatter().set_useOffset(False)
 
-        #if the 1st signal of the 1st channel of the 1st device is not empty
-        if len(new_samples[0].channel[0].signal[
-            self.dev_measure[0].sig_types['S1']]) > 0:
+        # TODO [floonone-20170904] Plot every device and every channel
+        for device in self.measuring_devices:
+            measurements = device.get_measurement_data()
+            signals = device.get_signals()
+            for sig in range(len(signals)):
+                # If the corresponding checkbox is checked then plot
+                sig_key = "S{}".format(sig+1)
+                sig_type = signals[sig]
+                if self.cboxes[0][0][sig_key].isChecked():
+                    # Draw the plot
+                    self.ax.plot(
+                        list(measurements[0][sig_type].values()),
+                        label="Dev-{} Ch-{} {}".format(1, 1, sig_type)
+                    )
 
-            # Discard old graph and reset basic properties
-            self.ax.cla()
-            self.ax.grid()
-            self.ax.set_ylabel("F(Hz)", rotation= 'horizontal')
-            self.ax.yaxis.set_label_coords(-0.03, 1.04)
-            # Remove exponential notation in y axis
-            self.ax.get_yaxis().get_major_formatter().set_useOffset(False)
-
-            #For each device
-            for dev in range(len(self.dev_measure)):
-                # Append new measurements to data historic
-                self.data[dev].append(new_samples[dev])
-                #For each signal in each channel
-                for ch in range(1):
-                    for sig in range (self.dev_measure[dev].n_signals):
-                        #if the corresponding checkbox is checked then plot
-                        sig_key = "S{}".format(sig+1)
-                        sig_type = self.dev_measure[dev].sig_types[sig_key]
-                        if self.cboxes[dev][ch][sig_key].isChecked():
-                            # Draw the plot
-                            self.ax.plot(
-                                self.data[dev].channel[ch].signal[sig_type],
-                                label="Dev-{dev} Ch-{chan} {signal}"
-                                .format(dev=dev+1, chan=ch+1,signal=sig_type)
-                            )
-
-            #print legends in the plot
+            # Print legends in the plot
             handles, labels = self.ax.get_legend_handles_labels()
             plt.legend(bbox_to_anchor=(0., 1.02, 1., 0.102), loc=0, ncol=3,
                        mode="expand", borderaxespad=0., fontsize='xx-small')
 
-            #Update sample counter
+            # Update sample counter
             self.sample_counter = len(self.data[0].channel[0].signal[
-            self.dev_measure[0].sig_types['S1']])
+                self.measuring_devices[0].sig_types['S1']])
 
-            #If scroll mode selected then cut the signal
+            # If scroll mode selected then cut the signal
             if self.scrollcheckBox.isChecked():
                 if self.sample_counter > 100:
                     self.ax.set_xlim(
@@ -383,7 +374,7 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         return
 
     def stop_plot(self):
-        self.timer.stop()
+        self.__plot_update.stop()
         self.m_engine.stop()
         logger.debug("Pressed stop button")
         return
@@ -391,42 +382,6 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
     def debug(self):
         print("debug")
         return
-
-    def debug_plot(self):
-        # Discard old graph and reset basic properties
-        self.ax.cla()
-        self.ax.grid()
-        self.ax.set_ylabel("F(Hz)", rotation= 'horizontal')
-        self.ax.yaxis.set_label_coords(-0.05, 1.04)
-        n_channels = int(self.devices[0]._dev_data['channels']['Quantity'])
-        n_signals = int(self.devices[0]._dev_data['channels']['Signals'])
-        sig_types = self.devices[0]._dev_data['channels']['SigTypes']
-        # Go over every device channel
-        for ch_index in range(n_channels):
-            # Go over every Signal in the channel and plot its value if it is
-            # specified in the corresponding CheckBox.
-            for signal_index in range(n_signals):
-                dic_index = "S{}".format(signal_index+1)
-                sig_type = sig_types[dic_index]
-                # Get new value and append it to data set.
-                value = random.gauss(10, 1+signal_index)
-                self.data['1'][ch_index][dic_index].append(value)
-                if self.cboxes[0][ch_index][dic_index].isChecked():
-                    # Draw the plot
-                    self.ax.plot(self.data['1'][ch_index][dic_index],
-                                 label="Dev-{dev} Ch-{channel} {signal}"
-                                       "".format(dev=1, channel=ch_index+1,
-                                                 signal=sig_type)
-                                )
-        handles, labels = self.ax.get_legend_handles_labels()
-        plt.legend(bbox_to_anchor=(0., 1.02, 1., 0.102), loc=3, ncol=3,
-                   mode="expand", borderaxespad=0., fontsize='xx-small')
-        if self.scrollcheckBox.isChecked():
-            if len(self.data['1']) > 100:
-                self.ax.set_xlim(len(self.data['1']) - 100, len(self.data['1']))
-        # Refresh canvas
-        self.canvas.draw()
-        logger.debug("Plot new sample: {}".format(value))
 
     def items_setup(self, conf_file, dev):
         """
@@ -470,7 +425,7 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
                     dic_index = "S{}".format(c_idx+1)
                     sig_type = dev_data['channels']['SigTypes'][dic_index]
                     checkbox.setText(sig_type)
-                    if sig_type != "<None>":
+                    if sig_type:
                         active_checkboxes[g_idx][dic_index] = checkbox
                         checkbox.setEnabled(True)
                     else:
@@ -487,7 +442,6 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         self.log_handler.enabled[logging.WARN] = self.WarnCheck.isChecked()
         self.log_handler.enabled[logging.ERROR] = self.ErrorCheck.isChecked()
         return
-
 
 def run():
     # The QApplication object manages the application control flow and settings.

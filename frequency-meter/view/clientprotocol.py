@@ -12,7 +12,10 @@ class Client(abc.ABC):
             return TCPIPClient(communications["Properties"]['CommProp1'],
                                communications["Properties"]['CommProp2'])
         elif communications["Protocol"] == "VISA":
-            return VISAClient(communications["Properties"]['CommProp1'])
+            return VISAClient(communications["Properties"]['CommProp1'],
+                              communications["Properties"]['CommProp2'],
+                              communications["Properties"]['CommProp3'],
+                              communications["Properties"]['CommProp4'])
         elif communications["Protocol"] == "Test":
             return TestClient()
         else:
@@ -84,13 +87,22 @@ class TCPIPClient(Client):
 
 
 class VISAClient(Client):
-    def __init__(self, address):
-        self.__address = address
+    def __init__(self, ethernet_board, host_ip, lan_device, gpib_address):
+        self.__ethernet_board = ethernet_board
+        self.__host_ip = host_ip
+        self.__lan_device = lan_device
+        self.__gpib_address = gpib_address
         self.__resource = None
 
     def connect(self):
         rm = visa.ResourceManager("@py")
-        self.__resource = rm.open_resource(self.__address)
+        visa_address = 'TCPIP{}::{}::{},{}::INSTR'.format(
+                self.__ethernet_board,
+                self.__host_ip,
+                self.__lan_device,
+                self.__gpib_address
+        )
+        self.__resource = rm.open_resource(visa_address)
         return True
 
     def disconnect(self):
@@ -104,6 +116,7 @@ class VISAClient(Client):
 
     def read(self):
         return True, self.__resource.read()
+
 
 class TestClient(Client):
     def __init__(self):
