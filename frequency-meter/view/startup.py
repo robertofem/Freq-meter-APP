@@ -4,14 +4,13 @@
 import glob
 import logging
 import os
-import random
 import sys
-import yaml
 # Third party libraries
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavTbar
 import matplotlib.pyplot as plt
 from PyQt5 import QtGui, QtCore, QtWidgets
+import yaml
 # Local libraries
 from view import device_manager
 from view import calibration
@@ -138,7 +137,7 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         self.__plot_update = QtCore.QTimer()
         self.__plot_update.timeout.connect(self.update_plots)
         # Measurement engine
-        self.m_engine = measurement_engine.MeasurementEngine("THREADED")
+        self.m_engine = measurement_engine.MeasurementEngine(threaded=False)
 
         # plot layout set-up.
         self.figure = plt.figure()
@@ -199,7 +198,7 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         self.device_scrollareas[dev-1].setVisible(True)
         self.device_labels[dev-1].setVisible(True)
         self.device_labels[dev-1].setText(device_name)
-        self.cboxes[dev-1] = self.items_setup(dev_path,dev)
+        self.cboxes[dev-1] = self.items_setup(dev_path, dev)
         # Devices manager area items set-up
         self.devname_labels_l[dev-1].setVisible(True)
         self.devname_labels_r[dev-1].setText(device_name)
@@ -335,38 +334,28 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         return
 
     def update_plots(self):
-        # Get measurements from measurement engine
-        new_samples = self.m_engine.get_values()
+        # Get measurements
+        self.ax.cla()
+        self.ax.grid()
+        self.ax.set_ylabel("F(Hz)", rotation='horizontal')
+        self.ax.yaxis.set_label_coords(-0.03, 1.04)
+        # Remove exponential notation in y axis
+        self.ax.get_yaxis().get_major_formatter().set_useOffset(False)
 
-        # If the 1st signal of the 1st channel of the 1st device is not empty
-        if len(new_samples[0].channel[0].signal[
-                self.measuring_devices[0].sig_types['S1']]) > 0:
-
-            # Discard old graph and reset basic properties
-            self.ax.cla()
-            self.ax.grid()
-            self.ax.set_ylabel("F(Hz)", rotation='horizontal')
-            self.ax.yaxis.set_label_coords(-0.03, 1.04)
-            # Remove exponential notation in y axis
-            self.ax.get_yaxis().get_major_formatter().set_useOffset(False)
-
-            # For each device
-            for dev in range(len(self.measuring_devices)):
-                # Append new measurements to data historic
-                self.data[dev].append(new_samples[dev])
-                # For each signal in each channel
-                for ch in range(1):
-                    for sig in range(self.measuring_devices[dev].n_signals):
-                        # If the corresponding checkbox is checked then plot
-                        sig_key = "S{}".format(sig+1)
-                        sig_type = self.measuring_devices[dev].sig_types[sig_key]
-                        if self.cboxes[dev][ch][sig_key].isChecked():
-                            # Draw the plot
-                            self.ax.plot(
-                                self.data[dev].channel[ch].signal[sig_type],
-                                label="Dev-{dev} Ch-{chan} {signal}"
-                                .format(dev=dev+1, chan=ch+1, signal=sig_type)
-                            )
+        # TODO [floonone-20170904] Plot every device and every channel
+        for device in self.measuring_devices:
+            measurements = device.get_measurement_data()
+            signals = device.get_signals()
+            for sig in range(len(signals)):
+                # If the corresponding checkbox is checked then plot
+                sig_key = "S{}".format(sig+1)
+                sig_type = signals[sig]
+                if self.cboxes[0][0][sig_key].isChecked():
+                    # Draw the plot
+                    self.ax.plot(
+                        list(measurements[0][sig_type].values()),
+                        label="Dev-{} Ch-{} {}".format(1, 1, sig_type)
+                    )
 
             # Print legends in the plot
             handles, labels = self.ax.get_legend_handles_labels()

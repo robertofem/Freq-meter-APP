@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 # Standard libraries
 import abc
+from collections import OrderedDict
+import datetime
 import logging
 import random
+# Third party libraries
 import yaml
-
 # Local application
 from view import clientprotocol
 
@@ -72,6 +74,13 @@ class FreqMeter(abc.ABC):
         self.__client = clientprotocol.Client.get_client(
                 self._dev_data['communications'])
         self.__connected = False
+        self._active_channel = None
+        self._measurement_data = []
+        for _ in range(self.get_channels()):
+            signal_measurements = {}
+            for signal in self.get_signals():
+                signal_measurements[signal] = OrderedDict()
+            self._measurement_data.append(signal_measurements)
 
     def connect(self):
         """
@@ -113,11 +122,32 @@ class FreqMeter(abc.ABC):
 
     @abc.abstractmethod
     def start_measurement(self, sample_time, channel):
+        self._active_channel = channel
+        return
+
+    def store_freq(self):
+        success, reply = self._fetch_freq()
+        if not success:
+            logger.error("Couldn't fetch frequency")
+            return
+        fetch_time = datetime.datetime.now()
+        logger.info("Fetch time: {}".format(
+                fetch_time.strftime("%H:%M:%S.%f")))
+        # TODO [floonone-20170901] reply decode?
+        values = reply.split(",")
+        values = [float(value) for value in values]
+        signals = self.get_signals()
+        for index, value in enumerate(values):
+            self._measurement_data[self._active_channel][signals[index]][
+                fetch_time] = value
         return
 
     @abc.abstractmethod
-    def fetch_freq(self):
-        return
+    def _fetch_freq(self):
+        return False, ""
+
+    def get_measurement_data(self):
+        return self._measurement_data
 
 
 class UviFreqMeter(FreqMeter):
@@ -146,22 +176,14 @@ class UviFreqMeter(FreqMeter):
     sig_types = {'S1': 'coarse', 'S2': 'fine', 'S3': 'fineCDT'}
 
     def start_measurement(self, sample_time, channel):
+        super(UviFreqMeter, self).start_measurement(sample_time, channel)
         self.reset()
         self._send("SENS:MODE:SAVELAST", True)
         self._send("SENS:FREQ:ALL:ARM:TIM {}".format(sample_time), True)
         self._send("INIT", True)
 
-    def fetch_freq(self):
-        success, reply = self._send("FETCH:FREQ:ALL", True)
-        if not success:
-            logger.error("Couldn't fetch frequency")
-            return
-        values = reply.decode().split(",")
-        return {
-            self.sig_types['S1']: float(values[0]),
-            self.sig_types['S2']: float(values[1]),
-            self.sig_types['S3']: float(values[2]),
-        }
+    def _fetch_freq(self):
+        return self._send("FETCH:FREQ:ALL", True)
 
     def cdt_start(self, gate_time, number_of_measurements):
         self._send("CDT:ARM:TIM {},{}".format(gate_time,
@@ -234,6 +256,7 @@ class AgilentFreqMeter(FreqMeter):
     sig_types = {'S1': 'fineCDT'}
 
     def start_measurement(self, sample_time, channel):
+        super(AgilentFreqMeter, self).start_measurement(sample_time, channel)
         self.reset()
         self._send("*CLS")
         self._send("*SRE 0")
@@ -245,14 +268,8 @@ class AgilentFreqMeter(FreqMeter):
         self._send(":FUNC 'FREQ {}".format(channel+1))
         self._send("INIT")
 
-    def fetch_freq(self):
-        success, reply = self._send("FETC:FREQ?", True)
-        if not success:
-            logger.error("Couldn't fetch frequency")
-            return
-        return {
-            self.sig_types['S1']: float(reply),
-        }
+    def _fetch_freq(self):
+        return self._send("FETC:FREQ?", True)
 
 
 class TestFreqMeter(FreqMeter):
@@ -281,14 +298,11 @@ class TestFreqMeter(FreqMeter):
     sig_types = {'S1': 'coarse', 'S2': 'fine', 'S3': 'fineCDT'}
 
     def start_measurement(self, sample_time, channel):
+        super(TestFreqMeter, self).start_measurement(sample_time, channel)
         return
 
-    def fetch_freq(self):
+    def _fetch_freq(self):
         values = []
         for index in range(3):
             values.append(random.gauss(10, 1+index))
-        return {
-            self.sig_types['S1']: float(values[0]),
-            self.sig_types['S2']: float(values[1]),
-            self.sig_types['S3']: float(values[2]),
-        }
+        return True, "{},{},{}".format(values[0], values[1], values[2])
