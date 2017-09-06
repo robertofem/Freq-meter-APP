@@ -1033,7 +1033,7 @@
    </layout>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
-  <widget class="QMenuBar" name="menuBar">
+  <widget class="QMenuBar" name="menu">
    <property name="geometry">
     <rect>
      <x>0</x>
@@ -1042,28 +1042,28 @@
      <height>27</height>
     </rect>
    </property>
-   <widget class="QMenu" name="menuFile">
+   <widget class="QMenu" name="file">
     <property name="title">
      <string>File</string>
     </property>
-    <addaction name="actionExit"/>
+    <addaction name="exit"/>
    </widget>
-   <widget class="QMenu" name="menuHelp">
+   <widget class="QMenu" name="help">
     <property name="title">
      <string>Help</string>
     </property>
     <addaction name="actionAbout"/>
    </widget>
-   <widget class="QMenu" name="menuTools">
+   <widget class="QMenu" name="tools">
     <property name="title">
      <string>Tools</string>
     </property>
-    <addaction name="actionDevice_Manager"/>
-    <addaction name="actionFPGAcalibration"/>
+    <addaction name="device_manager"/>
+    <addaction name="fpga_calibration"/>
    </widget>
-   <addaction name="menuFile"/>
-   <addaction name="menuTools"/>
-   <addaction name="menuHelp"/>
+   <addaction name="file"/>
+   <addaction name="tools"/>
+   <addaction name="help"/>
   </widget>
   <action name="actionFile">
    <property name="text">
@@ -1080,7 +1080,7 @@
     <string>Load</string>
    </property>
   </action>
-  <action name="actionExit">
+  <action name="exit">
    <property name="text">
     <string>Quit</string>
    </property>
@@ -1114,7 +1114,7 @@
     <string>Device manager</string>
    </property>
   </action>
-  <action name="actionDevice_Manager">
+  <action name="device_manager">
    <property name="text">
     <string>Device manager</string>
    </property>
@@ -1124,7 +1124,7 @@
     <string>Edit</string>
    </property>
   </action>
-  <action name="actionFPGAcalibration">
+  <action name="fpga_calibration">
    <property name="text">
     <string>FPGA frequency meter calibration</string>
    </property>

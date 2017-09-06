@@ -86,7 +86,7 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         self.setupUi(self)
         self.popup = None
         # Configure the Menu bar
-        self.menuTools.triggered[QtWidgets.QAction].connect(self.tools_action)
+        self.__connect_menu_actions()
         # Configure the logger, assigning an instance of AppLogHandler.
         self.log_handler = AppLogHandler(self.LoggerBrowser)
         logger.addHandler(self.log_handler)
@@ -242,11 +242,15 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         # Change the button text to Disconnect
         self.ConnectButton[slot].setText("Connect")
 
-    def tools_action(self, q):
-        if q.text() == "Device manager":
-            self.open_dev_mngr()
-        elif q.text() == "FPGA frequency meter calibration":
-            self.open_calib()
+    def __connect_menu_actions(self):
+        # File
+        # TODO [floonone-20170906] file actions
+        # Tools
+        self.device_manager.triggered.connect(self.open_dev_mngr)
+        self.fpga_calibration.triggered.connect(self.open_calib)
+        # Help
+        # TODO [floonone-20170906] help actions
+        return
 
     def open_dev_mngr(self):
         logger.debug("Opening Device Manager pop-up window")
