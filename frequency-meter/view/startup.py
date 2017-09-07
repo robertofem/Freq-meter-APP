@@ -86,7 +86,7 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         # Run the windows initialization routines.
         self.setupUi(self)
         # Instrument devices list.
-        self.__devices = [None, None]
+        self.__devices = {}
         self.popup = None
         # Configure the logger, assigning an instance of AppLogHandler.
         self.log_handler = AppLogHandler(self.LoggerBrowser)
@@ -102,15 +102,11 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         self.InfoCheck.clicked.connect(self.update_logger_level)
         self.WarnCheck.clicked.connect(self.update_logger_level)
         self.ErrorCheck.clicked.connect(self.update_logger_level)
-        # Connect main buttons to its functions
-        self.StartButton.clicked.connect(self.start_plot)
-        self.StopButton.clicked.connect(self.stop_plot)
-        # Make measurement times visible
-        self.TimesgroupBox.setEnabled(True)
 
+        self.__setup_plot()
         # Qt timer set-up for updating the plots.
         self.__plot_update = QTimer()
-        self.__plot_update.timeout.connect(self.update_plots)
+        self.__plot_update.timeout.connect(self.__update_plot)
         # Measurement engine
         self.m_engine = measurement_engine.MeasurementEngine(threaded=False)
 
@@ -119,16 +115,16 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         self.figure.patch.set_alpha(0)
         self.canvas = FigureCanvas(self.figure)
         self.toolbar = NavTbar(self.canvas, self)
-        self.plotControlHLayout.addWidget(self.toolbar)
+        self.plot_control.addWidget(self.toolbar)
         spacer1 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding,
                                         QtWidgets.QSizePolicy.Minimum)
-        self.plotControlHLayout.addItem(spacer1)
-        self.plotVLayout.addWidget(self.canvas)
+        self.plot_control.addItem(spacer1)
+        self.plot.addWidget(self.canvas)
         self.ax = self.figure.add_subplot(111)
         self.figure.subplots_adjust(top=0.9, bottom=0.1, left=0.13, right=0.95)
         self.ax.grid()
         self.ax.set_ylabel("F(Hz)", rotation='horizontal')
-        self.ax.yaxis.set_label_coords(-0.05, 1.04)
+        self.ax.yaxis.set_label_coords(-0.01, 1.04)
 
         # Plot data
         # list of InstrumentData
@@ -141,16 +137,43 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         # File
         # TODO [floonone-20170906] file actions
         # Tools
-        self.device_manager.triggered.connect(self.open_dev_mngr)
-        self.fpga_calibration.triggered.connect(self.open_calib)
+        self.device_manager.triggered.connect(self.__open_device_manager)
+        self.fpga_calibration.triggered.connect(self.__open_calibration_window)
         # Help
         # TODO [floonone-20170906] help actions
+        return
+
+    def __open_device_manager(self):
+        logger.debug("Opening Device Manager pop-up window")
+        self.popup = device_manager.DevManagerWindow()
+        self.popup.exec_()
+        self.popup = None
+        for slot in range(2):
+            self.updateDevCombobox(self.DevComboBox[slot])
+        logger.info("Updated devices list")
+        return
+
+    def __open_calibration_window(self):
+        logger.debug("Opening FPGA device Calibration pop-up window")
+        self.popup = calibration.CalibWindow()
+        self.popup.exec_()
+        self.popup = None
         return
 
     def __setup_device_controls(self):
         self.__fill_device_selectors()
         self.__setup_signal_channel_controls()
         self.__setup_device_control_button()
+
+    def __fill_device_selectors(self):
+        devices_list = [os.path.basename(match)[:-4]
+                        for match in glob.glob('resources/devices/*yml')]
+        device_selectors = self.findChildren(
+                QtWidgets.QComboBox, QRegularExpression("\\d_selector"))
+        for selector in device_selectors:
+            selector.clear()
+            selector.addItems(devices_list)
+        return
 
     def __setup_signal_channel_controls(self):
         channel_controls = self.findChildren(QtWidgets.QRadioButton,
@@ -264,7 +287,7 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         device_group = self.findChild(QtWidgets.QGroupBox,
                                       "device{}".format(slot))
         # Remove device from the list of available devices
-        self.__devices[slot] = None
+        del self.__devices[slot]
         # Change the button text to Connect
         device_group.findChild(QtWidgets.QPushButton).setText("Connect")
         # Enable selector
@@ -292,113 +315,69 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         device_group.setProperty("name", None)
         return
 
-    def open_dev_mngr(self):
-        logger.debug("Opening Device Manager pop-up window")
-        self.popup = device_manager.DevManagerWindow()
-        self.popup.exec_()
-        self.popup = None
-        for slot in range(2):
-            self.updateDevCombobox(self.DevComboBox[slot])
-        logger.info("Updated devices list")
-        return
+    def __setup_plot(self):
+        self.start.pressed.connect(self.__start_plot)
+        self.stop.pressed.connect(self.__stop_plot)
+        # TODO [floonone-20170907] save button
 
-    def open_calib(self):
-        logger.debug("Opening FPGA device Calibration pop-up window")
-        self.popup = calibration.CalibWindow()
-        self.popup.exec_()
-        self.popup = None
-        return
-
-    def __fill_device_selectors(self):
-        devices_list = [os.path.basename(match)[:-4]
-                        for match in glob.glob('resources/devices/*yml')]
-        device_selectors = self.findChildren(
-                QtWidgets.QComboBox, QRegularExpression("\\d_selector"))
-        for selector in device_selectors:
-            selector.clear()
-            selector.addItems(devices_list)
-        return
-
-    def start_plot(self):
-        # Check which devices will be loaded and connected
-        # They will be used to measure and plot
-        self.measuring_devices = []
-        for device in self.__devices:
-            if device:
-                if not device.is_connected():
-                    logger.warning("Some device is not connected")
-                    return
-                self.measuring_devices.append(device)
-
-        # Generate data structure to store plotting values
-        self.data = []
-        for measuring_device in self.measuring_devices:
-            self.data.append(instrument_data.InstrumentData(
-                n_channels=1, n_signals=measuring_device.n_signals,
-                sig_types=measuring_device.sig_types))
-        logger.debug("Cleaning older stored data")
+    def __start_plot(self):
+        fetch_time = self.fetch_time.value()
+        sample_time = self.fetch_time.value()
+        plot_time = min(500, fetch_time*1000)
 
         # Start the measurement engine
-        sample_time = self.SampleTimeBox.value()
-        fetch_time = self.FetchTimeBox.value()
-        self.m_engine.start(self.measuring_devices, fetch_time, sample_time)
-        logger.debug("Measurement Starts")
+        self.m_engine.start(self.__devices.values(), fetch_time, sample_time)
+        logger.debug("Measurement started")
 
         # Start the timer to update plots
-        # 65ms=15 updates per second (enough for human eye)
-        self.__plot_update.start(500)
-        logger.debug("Plotting Starts")
+        self.__plot_update.start(plot_time)
+        logger.debug("Plotting started")
         return
 
-    def update_plots(self):
-        # Get measurements
+    def __stop_plot(self):
+        self.m_engine.stop()
+        logger.debug("Measurement stopped")
+        self.__plot_update.stop()
+        logger.debug("Plotting stopped")
+
+    def __update_plot(self):
+        # Clear plot
         self.ax.cla()
         self.ax.grid()
         self.ax.set_ylabel("F(Hz)", rotation='horizontal')
-        self.ax.yaxis.set_label_coords(-0.03, 1.04)
+        self.ax.yaxis.set_label_coords(-0.01, 1.04)
         # Remove exponential notation in y axis
         self.ax.get_yaxis().get_major_formatter().set_useOffset(False)
-
-        # TODO [floonone-20170904] Plot every device and every channel
-        for device in self.measuring_devices:
+        measurement_size = 0
+        for i, device in self.__devices.items():
             measurements = device.get_measurement_data()
-            signals = device.get_signals()
-            for sig in range(len(signals)):
-                # If the corresponding checkbox is checked then plot
-                sig_key = "S{}".format(sig+1)
-                sig_type = signals[sig]
-                if self.cboxes[0][0][sig_key].isChecked():
-                    # Draw the plot
-                    self.ax.plot(
-                        list(measurements[0][sig_type].values()),
-                        label="Dev-{} Ch-{} {}".format(1, 1, sig_type)
-                    )
+            device_control = self.findChild(
+                    QtWidgets.QGroupBox, "device{}".format(i))
+            name = device_control.property("name")
+            selected_channel = None
+            for j, channel in enumerate(device_control.findChildren(
+                    QtWidgets.QRadioButton)):
+                if channel.isChecked():
+                    selected_channel = j
+            channel_measurements = measurements[selected_channel]
+            for signal in filter(
+                    lambda x: x.isChecked(),
+                    device_control.findChildren(QtWidgets.QCheckBox)):
+                signal_values = list(
+                        channel_measurements[signal.text()].values())
+                measurement_size = max(measurement_size, len(signal_values))
+                # Draw the plot
+                self.ax.plot(signal_values, label="{} Ch-{} {}".format(
+                        name, selected_channel+1, signal.text()))
 
-            # Print legends in the plot
-            handles, labels = self.ax.get_legend_handles_labels()
-            plt.legend(bbox_to_anchor=(0., 1.02, 1., 0.102), loc=0, ncol=3,
-                       mode="expand", borderaxespad=0., fontsize='xx-small')
+        if self.autoscroll.isChecked() and measurement_size > 100:
+            self.ax.set_xlim(measurement_size - 100, measurement_size)
 
-            # Update sample counter
-            self.sample_counter = len(self.data[0].channel[0].signal[
-                self.measuring_devices[0].sig_types['S1']])
+        # Print legends in the plot
+        plt.legend(bbox_to_anchor=(0., 1.02, 1., 0.102), loc=0, ncol=3,
+                   mode="expand", borderaxespad=0., fontsize='xx-small')
 
-            # If scroll mode selected then cut the signal
-            if self.scrollcheckBox.isChecked():
-                if self.sample_counter > 100:
-                    self.ax.set_xlim(
-                        self.sample_counter - 100,
-                        self.sample_counter
-                    )
-
-            # Refresh canvas
-            self.canvas.draw()
-        return
-
-    def stop_plot(self):
-        self.__plot_update.stop()
-        self.m_engine.stop()
-        logger.debug("Pressed stop button")
+        self.canvas.draw()
         return
 
     def update_logger_level(self):

@@ -75,12 +75,16 @@ class FreqMeter(abc.ABC):
                 self._dev_data['communications'])
         self.__connected = False
         self._active_channel = None
-        self._measurement_data = []
+        self._measurement_data = None
+
+    def __init_measurement_data(self):
+        measurement_data = []
         for _ in range(self.get_channels()):
             signal_measurements = {}
             for signal in self.get_signals():
                 signal_measurements[signal] = OrderedDict()
-            self._measurement_data.append(signal_measurements)
+            measurement_data.append(signal_measurements)
+        return measurement_data
 
     def connect(self):
         """
@@ -122,6 +126,7 @@ class FreqMeter(abc.ABC):
 
     @abc.abstractmethod
     def start_measurement(self, sample_time, channel):
+        self._measurement_data = self.__init_measurement_data()
         self._active_channel = channel
         return
 
