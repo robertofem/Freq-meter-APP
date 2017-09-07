@@ -9,7 +9,8 @@ import sys
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavTbar
 import matplotlib.pyplot as plt
-from PyQt5 import QtGui, QtCore, QtWidgets
+from PyQt5 import QtGui, QtWidgets
+from PyQt5.QtCore import QRegularExpression, QTimer
 import yaml
 # Local libraries
 from view import device_manager
@@ -84,13 +85,18 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         QtWidgets.QMainWindow.__init__(self)
         # Run the windows initialization routines.
         self.setupUi(self)
+        # Instrument devices list.
+        self.__devices = [None, None]
         self.popup = None
-        # Configure the Menu bar
-        self.__connect_menu_actions()
         # Configure the logger, assigning an instance of AppLogHandler.
         self.log_handler = AppLogHandler(self.LoggerBrowser)
         logger.addHandler(self.log_handler)
         logger.info("Initialized the Frequency-Meter Application")
+        # Setup menu
+        self.__setup_menu()
+        # Setup device control area
+        self.__setup_device_controls()
+
         # Log console level selection buttons
         self.DebugCheck.clicked.connect(self.update_logger_level)
         self.InfoCheck.clicked.connect(self.update_logger_level)
@@ -99,25 +105,11 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         # Connect main buttons to its functions
         self.StartButton.clicked.connect(self.start_plot)
         self.StopButton.clicked.connect(self.stop_plot)
-        self.ConnectDevButton1.clicked.connect(self.connect_device1)
-        self.ConnectDevButton2.clicked.connect(self.connect_device2)
-        # Lists containing graphical objects associated to different device
-        self.device_scrollareas = [self.dev1_scrollarea, self.dev2_scrollarea]
-        self.DevComboBox = [self.DeviceComboBox1, self.DeviceComboBox2]
-        self.ConnectButton = [self.ConnectDevButton1, self.ConnectDevButton2]
-        # Setup of the graphic elements in those Lists
-        for slot in range(2):
-            self.device_scrollareas[slot].setVisible(True)
-            self.device_scrollareas[slot].setEnabled(False)
-            self.device_scrollareas[slot].setFixedHeight(145)
-            self.updateDevCombobox(self.DevComboBox[slot])
         # Make measurement times visible
         self.TimesgroupBox.setEnabled(True)
-        # Instrument devices list.
-        self.devices = [None, None]
 
         # Qt timer set-up for updating the plots.
-        self.__plot_update = QtCore.QTimer()
+        self.__plot_update = QTimer()
         self.__plot_update.timeout.connect(self.update_plots)
         # Measurement engine
         self.m_engine = measurement_engine.MeasurementEngine(threaded=False)
@@ -145,104 +137,7 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         self.cboxes = [[], []]
         self.sample_counter = 0
 
-    def connect_device1(self):
-        if self.ConnectButton[0].text() == "Connect":
-            self.connect_device(0)
-        else:
-            self.disconnect_device(0)
-        return
-
-    def connect_device2(self):
-        if self.ConnectButton[1].text() == "Connect":
-            self.connect_device(1)
-        else:
-            self.disconnect_device(1)
-        return
-
-    def connect_device(self, slot):
-        """
-        Load device in its corresponding slot and try to connect to it.
-        """
-        device_name = self.DevComboBox[slot].currentText()
-        # Return if the ComboBox has not a valid item selected.
-        if device_name == "<None>":
-            logger.warning("No device selected")
-            return
-        else:
-            if slot == 0:
-                other_slot = 1
-            else:
-                other_slot = 0
-            if device_name == self.DevComboBox[other_slot].currentText():
-                logger.warning(
-                        "Device {} is already selected in the other slot"
-                        "".format(device_name))
-                return
-
-        # Deal with the situation where the conf file is deleted since
-        # the last time the list was refreshed.
-        dev_dir = "{}/resources/devices/".format(os.getcwd())
-        dev_path = "{dir}{dev}.yml".format(dir=dev_dir, dev=device_name)
-        if not glob.glob(dev_path):
-            logger.warning("Selected device does not longer exist")
-            return
-
-        # Disconnect and delete the old device in this slot
-        if self.devices[slot]:
-            # Disconnect first
-            if self.devices[slot].is_connected():
-                self.devices[slot].disconnect()
-        self.devices[slot] = None
-        # Disable the scroll
-        self.device_scrollareas[slot].setEnabled(False)
-
-        # Create a new device and try to connect to it
-        new_device = freqmeterdevice.FreqMeter.get_freq_meter(dev_path)
-        connected = new_device.connect()
-        if connected:
-            logger.info("Connected to device {}".format(device_name))
-            ready = new_device.is_ready()
-            if not ready:
-                logger.error(
-                        "Device {} connected but not responding ACK".format(
-                                device_name))
-                return
-        else:
-            logger.error("Unable to connect to device {}".format(device_name))
-
-        # Add device to the list of available devices to do measurements
-        self.devices[slot] = new_device
-
-        # Measurement area items set-up
-        self.device_scrollareas[slot].setEnabled(True)
-        self.cboxes[slot] = self.items_setup(dev_path, slot+1)
-
-        # Reset the ComboBox to the default value.
-        # self.DevComboBox[slot].setCurrentIndex(0)
-
-        # Change the button text to Disconnect
-        self.ConnectButton[slot].setText("Disconnect")
-
-        return
-
-    def disconnect_device(self, slot):
-        """
-        Disconnect device and remove from slot.
-        """
-        # Disconnect and delete the old device in this slot
-        if self.devices[slot]:
-            # Disconnect first
-            if self.devices[slot].is_connected():
-                self.devices[slot].disconnect()
-                device_name = self.DevComboBox[slot].currentText()
-                logger.info("Disconnected from device {}".format(device_name))
-        self.devices[slot] = None
-        # Disable the scroll
-        self.device_scrollareas[slot].setEnabled(False)
-        # Change the button text to Disconnect
-        self.ConnectButton[slot].setText("Connect")
-
-    def __connect_menu_actions(self):
+    def __setup_menu(self):
         # File
         # TODO [floonone-20170906] file actions
         # Tools
@@ -250,6 +145,151 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         self.fpga_calibration.triggered.connect(self.open_calib)
         # Help
         # TODO [floonone-20170906] help actions
+        return
+
+    def __setup_device_controls(self):
+        self.__fill_device_selectors()
+        self.__setup_signal_channel_controls()
+        self.__setup_device_control_button()
+
+    def __setup_signal_channel_controls(self):
+        channel_controls = self.findChildren(QtWidgets.QRadioButton,
+                                             QRegularExpression(
+                                                     "device\\d_channel\\d"))
+        for control in channel_controls:
+            policy = control.sizePolicy()
+            policy.setRetainSizeWhenHidden(True)
+            control.setSizePolicy(policy)
+            control.setEnabled(False)
+            control.setVisible(False)
+
+        signal_controls = self.findChildren(QtWidgets.QCheckBox,
+                                            QRegularExpression(
+                                                     "device\\d_signal\\d"))
+        for control in signal_controls:
+            policy = control.sizePolicy()
+            policy.setRetainSizeWhenHidden(True)
+            control.setSizePolicy(policy)
+            control.setEnabled(False)
+            control.setVisible(False)
+
+    def __setup_device_control_button(self):
+        device_connects = self.findChildren(
+                QtWidgets.QPushButton, QRegularExpression("\\d_connect"))
+        for i, connect in enumerate(device_connects):
+            connect.pressed.connect(
+                    lambda slot=i: self.__on_device_control_button_press(slot))
+        return
+
+    def __on_device_control_button_press(self, slot):
+        device_group = self.findChild(QtWidgets.QGroupBox,
+                                      "device{}".format(slot))
+        if device_group.property("name"):
+            self.__disconnect_device(slot)
+        else:
+            self.__connect_device(slot)
+
+    def __connect_device(self, slot):
+        device_group = self.findChild(QtWidgets.QGroupBox,
+                                      "device{}".format(slot))
+        name = device_group.findChild(QtWidgets.QComboBox).currentText()
+        # Check rest of slots to see if device is already loaded
+        checks = [checked for checked in filter(
+                lambda child: child.property("name") == name,
+                self.findChildren(QtWidgets.QGroupBox,
+                                  QRegularExpression("device\\d$")))]
+        if len(checks):
+            logger.warning("Device {} is already selected in the other slot"
+                           "".format(name))
+            return False
+        # FIXME [floonone-20170906] path join
+        dev_dir = "{}/resources/devices/".format(os.getcwd())
+        dev_path = "{}{}.yml".format(dev_dir, name)
+        if not glob.glob(dev_path):
+            logger.warning("Selected device does not longer exist")
+            return
+
+        # Create a new device and try to connect to it
+        new_device = freqmeterdevice.FreqMeter.get_freq_meter(dev_path)
+        if not new_device.connect():
+            logger.error("Unable to connect to device {}".format(name))
+            return
+        if not new_device.is_ready():
+            logger.error("Device {} connected but not responding ACK".format(
+                    name))
+            return
+
+        logger.info("Connected to device {}".format(name))
+
+        # Add device to the list of available devices to do measurements
+        self.__devices[slot] = new_device
+
+        # Change the button text to Disconnect
+        device_group.findChild(QtWidgets.QPushButton).setText("Disconnect")
+        # Disable selector
+        device_group.findChild(QtWidgets.QComboBox).setEnabled(False)
+        # Enable signal and channel controls
+        for control in device_group.findChildren(QtWidgets.QGroupBox):
+            control.setEnabled(True)
+        # Show available channels
+        channel_controls = [channel for channel in device_group.findChildren(
+                QtWidgets.QRadioButton)]
+        # FIXME [floonone-20170906] don't use static method
+        for i in range(new_device.__class__.get_channels()):
+            channel_controls[i].setEnabled(True)
+            channel_controls[i].setVisible(True)
+        for i in range(new_device.__class__.get_channels(), 4):
+            channel_controls[i].setEnabled(False)
+            channel_controls[i].setVisible(False)
+        # Select the first channel by default
+        channel_controls[0].setChecked(True)
+        # Show available signals
+        signal_controls = [signal for signal in device_group.findChildren(
+                QtWidgets.QCheckBox)]
+        signals = new_device.get_signals()
+        # FIXME [floonone-20170906] don't use static method
+        for i in range(len(signals)):
+            signal_controls[i].setText(signals[i])
+            signal_controls[i].setEnabled(True)
+            signal_controls[i].setVisible(True)
+        for i in range(len(signals), 4):
+            signal_controls[i].setText("")
+            signal_controls[i].setEnabled(False)
+            signal_controls[i].setVisible(False)
+
+        device_group.setProperty("name", name)
+        return
+
+    def __disconnect_device(self, slot):
+        device_group = self.findChild(QtWidgets.QGroupBox,
+                                      "device{}".format(slot))
+        # Remove device from the list of available devices
+        self.__devices[slot] = None
+        # Change the button text to Connect
+        device_group.findChild(QtWidgets.QPushButton).setText("Connect")
+        # Enable selector
+        device_group.findChild(QtWidgets.QComboBox).setEnabled(True)
+        # Disable signal and channel controls
+        for control in device_group.findChildren(QtWidgets.QGroupBox):
+            control.setEnabled(False)
+        channel_controls = [channel for channel in device_group.findChildren(
+                QtWidgets.QRadioButton)]
+        for control in channel_controls:
+            control.setChecked(False)
+            control.setEnabled(False)
+            control.setVisible(False)
+        signal_controls = [signal for signal in device_group.findChildren(
+                QtWidgets.QCheckBox)]
+        for control in signal_controls:
+            control.setChecked(False)
+            control.setEnabled(False)
+            control.setVisible(False)
+            control.setText("")
+
+        logger.info("Disconnected from device {}".format(
+                device_group.property("name")))
+
+        device_group.setProperty("name", None)
         return
 
     def open_dev_mngr(self):
@@ -269,19 +309,21 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         self.popup = None
         return
 
-    def updateDevCombobox(self, comboBox):
-        devices_list = [os.path.basename(match)[:-4] for match in
-                        glob.glob('resources/devices/*yml')]
-        comboBox.clear()
-        comboBox.addItem('<None>')
-        comboBox.addItems(devices_list)
+    def __fill_device_selectors(self):
+        devices_list = [os.path.basename(match)[:-4]
+                        for match in glob.glob('resources/devices/*yml')]
+        device_selectors = self.findChildren(
+                QtWidgets.QComboBox, QRegularExpression("\\d_selector"))
+        for selector in device_selectors:
+            selector.clear()
+            selector.addItems(devices_list)
         return
 
     def start_plot(self):
         # Check which devices will be loaded and connected
         # They will be used to measure and plot
         self.measuring_devices = []
-        for device in self.devices:
+        for device in self.__devices:
             if device:
                 if not device.is_connected():
                     logger.warning("Some device is not connected")
@@ -358,58 +400,6 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         self.m_engine.stop()
         logger.debug("Pressed stop button")
         return
-
-    def items_setup(self, conf_file, dev):
-        """
-        Reads the info from a conf_file and prepares the GUI items.
-
-        There is a GroupBox for each device channel, with a maximum of
-        four. Each GroupBox is visible or invisible depending on the
-        amount of channels specified in the configuration file.
-
-        Also, the ComboBoxes representing the signals from every channel
-        are enabled or disabled depending if they have any function
-        specified in the configuration file.
-
-        Finally, the method returns a dictionary with every configured
-        device signal.
-        """
-        # Find the scroll area corresponding to the input device.
-        scrollarea_name = "dev{}_scrollarea".format(dev)
-        dev_sa = ""
-        # Find the ScrollArea corresponding to the input device number.
-        for sa in self.findChildren(QtWidgets.QScrollArea):
-            if sa.objectName() == scrollarea_name:
-                dev_sa = sa
-        if dev_sa == "":
-            logger.debug("No ScrollArea detected with name {}".format(dev_sa))
-            return []
-        # Open and load the input device configuration file.
-        with open(conf_file, 'r') as read_file:
-            dev_data = yaml.load(read_file)
-        active_checkboxes = []
-        # Go over every group in the device area, representing each possible
-        # channel, and set the GUI configuration according to the conf file.
-        for g_idx, group in enumerate(dev_sa.findChildren(QtWidgets.QGroupBox)):
-            if g_idx < int(dev_data['channels']['Quantity']):
-                group.setVisible(True)
-                active_checkboxes.append(dict())
-                # Go over every CheckBox in the channel GroupBox and enable it
-                # if it is specified in the configuration file.
-                for c_idx, checkbox in enumerate(
-                        group.findChildren(QtWidgets.QCheckBox)):
-                    dic_index = "S{}".format(c_idx+1)
-                    sig_type = dev_data['channels']['SigTypes'][dic_index]
-                    checkbox.setText(sig_type)
-                    if sig_type:
-                        active_checkboxes[g_idx][dic_index] = checkbox
-                        checkbox.setEnabled(True)
-                    else:
-                        checkbox.setEnabled(False)
-            # Hide the GroupBox if is not specified at the configuration file.
-            else:
-                group.setVisible(False)
-        return active_checkboxes
 
     def update_logger_level(self):
         """Evaluate the check boxes states and update logger level."""
