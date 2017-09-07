@@ -319,12 +319,25 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         self.start.pressed.connect(self.__start_plot)
         self.stop.pressed.connect(self.__stop_plot)
         # TODO [floonone-20170907] save button
+        self.save.setEnabled(False)
 
     def __start_plot(self):
+        # Block controls
+        self.start.setEnabled(False)
+        self.stop.setEnabled(True)
+        self.save.setEnabled(False)
+        self.measurement_configuration.setEnabled(False)
+
+        for i, device in enumerate(self.findChildren(
+                QtWidgets.QGroupBox, QRegularExpression("device\\d$"))):
+            device.findChild(QtWidgets.QComboBox).setEnabled(False)
+            device.findChild(QtWidgets.QPushButton).setEnabled(False)
+            device.findChild(QtWidgets.QGroupBox,
+                             "device{}_channels".format(i)).setEnabled(False)
+
         fetch_time = self.fetch_time.value()
         sample_time = self.fetch_time.value()
         plot_time = min(500, fetch_time*1000)
-
         # Start the measurement engine
         self.m_engine.start(self.__devices.values(), fetch_time, sample_time)
         logger.debug("Measurement started")
@@ -339,6 +352,20 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         logger.debug("Measurement stopped")
         self.__plot_update.stop()
         logger.debug("Plotting stopped")
+
+        # Unlock controls
+        self.start.setEnabled(True)
+        self.stop.setEnabled(False)
+        self.save.setEnabled(True)
+        self.measurement_configuration.setEnabled(True)
+
+        for i, device in enumerate(self.findChildren(
+                QtWidgets.QGroupBox, QRegularExpression("device\\d$"))):
+            device.findChild(QtWidgets.QPushButton).setEnabled(True)
+            device.findChild(QtWidgets.QGroupBox,
+                             "device{}_channels".format(i)).setEnabled(True)
+            if not device.property("name"):
+                device.findChild(QtWidgets.QComboBox).setEnabled(True)
 
     def __update_plot(self):
         # Clear plot

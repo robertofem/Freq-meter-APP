@@ -295,6 +295,7 @@ class Ui_MainWindow(object):
         self.start.setObjectName("start")
         self.measurement_actions.addWidget(self.start)
         self.stop = QtWidgets.QPushButton(self.measurement)
+        self.stop.setEnabled(False)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
