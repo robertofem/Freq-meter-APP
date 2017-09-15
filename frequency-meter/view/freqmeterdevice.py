@@ -80,9 +80,7 @@ class FreqMeter(abc.ABC):
     def __init_measurement_data(self):
         measurement_data = []
         for _ in range(self.get_channels()):
-            signal_measurements = {}
-            for signal in self.get_signals():
-                signal_measurements[signal] = OrderedDict()
+            signal_measurements = OrderedDict()
             measurement_data.append(signal_measurements)
         return measurement_data
 
@@ -138,13 +136,13 @@ class FreqMeter(abc.ABC):
         fetch_time = datetime.datetime.now()
         logger.info("Fetch time: {}".format(
                 fetch_time.strftime("%H:%M:%S.%f")))
-        # TODO [floonone-20170901] reply decode?
         values = reply.split(",")
         values = [float(value) for value in values]
         signals = self.get_signals()
+        measurement = {}
         for index, value in enumerate(values):
-            self._measurement_data[self._active_channel][signals[index]][
-                fetch_time] = value
+            measurement[signals[index]] = value
+        self._measurement_data[self._active_channel][fetch_time] = measurement
         return
 
     @abc.abstractmethod

@@ -390,9 +390,8 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
             for signal in filter(
                     lambda x: x.isChecked(),
                     device_control.findChildren(QtWidgets.QCheckBox)):
-                signal_values = list(
-                        channel_measurements[signal.text()].values())
-                measurement_size = max(measurement_size, len(signal_values))
+                signal_values = [measurement[signal.text()]
+                    for measurement in channel_measurements.values()]
                 # Draw the plot
                 self.ax.plot(signal_values, label="{} Ch-{} {}".format(
                         name, selected_channel+1, signal.text()))
