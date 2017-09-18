@@ -41,29 +41,29 @@ class FreqMeter(abc.ABC):
         else:
             return None
 
-    @staticmethod
+    @classmethod
     @abc.abstractmethod
-    def get_vendor_name():
+    def get_vendor_name(cls):
         return ""
 
-    @staticmethod
+    @classmethod
     @abc.abstractmethod
-    def get_channels():
+    def get_channels(cls):
         return 0
 
-    @staticmethod
+    @classmethod
     @abc.abstractmethod
-    def get_signals():
+    def get_signals(cls):
         return []
 
-    @staticmethod
+    @classmethod
     @abc.abstractmethod
-    def get_protocols():
+    def get_protocols(cls):
         return []
 
-    @staticmethod
+    @classmethod
     @abc.abstractmethod
-    def get_impedances():
+    def get_impedances(cls):
         return []
 
     def __init__(self, dev_path):
@@ -154,29 +154,25 @@ class FreqMeter(abc.ABC):
 
 
 class UviFreqMeter(FreqMeter):
-    @staticmethod
-    def get_vendor_name():
+    @classmethod
+    def get_vendor_name(cls):
         return "Uvigo"
 
-    @staticmethod
-    def get_channels():
+    @classmethod
+    def get_channels(cls):
         return 1
 
-    @staticmethod
-    def get_signals():
+    @classmethod
+    def get_signals(cls):
         return ["coarse", "fine", "fineCDT"]
 
-    @staticmethod
-    def get_protocols():
+    @classmethod
+    def get_protocols(cls):
         return ["TCP/IP"]
 
-    @staticmethod
-    def get_impedances():
+    @classmethod
+    def get_impedances(cls):
         return ["50", "1M"]
-
-    n_channels = 1
-    n_signals = 3
-    sig_types = {'S1': 'coarse', 'S2': 'fine', 'S3': 'fineCDT'}
 
     def start_measurement(self, sample_time, channel):
         super(UviFreqMeter, self).start_measurement(sample_time, channel)
@@ -234,29 +230,25 @@ class UviFreqMeter(FreqMeter):
 
 
 class AgilentFreqMeter(FreqMeter):
-    @staticmethod
-    def get_vendor_name():
+    @classmethod
+    def get_vendor_name(cls):
         return "Agilent"
 
-    @staticmethod
-    def get_channels():
+    @classmethod
+    def get_channels(cls):
         return 2
 
-    @staticmethod
-    def get_signals():
+    @classmethod
+    def get_signals(cls):
         return ["fineCDT"]
 
-    @staticmethod
-    def get_protocols():
+    @classmethod
+    def get_protocols(cls):
         return ["VISA"]
 
-    @staticmethod
-    def get_impedances():
+    @classmethod
+    def get_impedances(cls):
         return ["50", "1M"]
-
-    n_channels = 2
-    n_signals = 1
-    sig_types = {'S1': 'fineCDT'}
 
     def start_measurement(self, sample_time, channel):
         super(AgilentFreqMeter, self).start_measurement(sample_time, channel)
@@ -276,29 +268,25 @@ class AgilentFreqMeter(FreqMeter):
 
 
 class TestFreqMeter(FreqMeter):
-    @staticmethod
-    def get_vendor_name():
+    @classmethod
+    def get_vendor_name(cls):
         return "Test"
 
-    @staticmethod
-    def get_channels():
+    @classmethod
+    def get_channels(cls):
         return 2
 
-    @staticmethod
-    def get_signals():
+    @classmethod
+    def get_signals(cls):
         return ["coarse", "fine", "fineCDT"]
 
-    @staticmethod
-    def get_protocols():
+    @classmethod
+    def get_protocols(cls):
         return ["Test"]
 
-    @staticmethod
-    def get_impedances():
+    @classmethod
+    def get_impedances(cls):
         return ["50", "1M"]
-
-    n_channels = 2
-    n_signals = 3
-    sig_types = {'S1': 'coarse', 'S2': 'fine', 'S3': 'fineCDT'}
 
     def start_measurement(self, sample_time, channel):
         super(TestFreqMeter, self).start_measurement(sample_time, channel)

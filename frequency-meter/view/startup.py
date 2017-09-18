@@ -11,13 +11,11 @@ from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavTbar
 import matplotlib.pyplot as plt
 from PyQt5 import QtGui, QtWidgets
 from PyQt5.QtCore import QRegularExpression, QTimer
-import yaml
 # Local libraries
 from view import device_manager
 from view import calibration
 from view import freqmeterdevice
 from view import measurement_engine
-from view import instrument_data
 from view import interface
 
 # Create the application logger, with a previously defined configuration.
@@ -176,9 +174,9 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         return
 
     def __setup_signal_channel_controls(self):
-        channel_controls = self.findChildren(QtWidgets.QRadioButton,
-                                             QRegularExpression(
-                                                     "device\\d_channel\\d"))
+        channel_controls = self.findChildren(
+                QtWidgets.QRadioButton,
+                QRegularExpression("device\\d_channel\\d"))
         for control in channel_controls:
             policy = control.sizePolicy()
             policy.setRetainSizeWhenHidden(True)
@@ -186,9 +184,9 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
             control.setEnabled(False)
             control.setVisible(False)
 
-        signal_controls = self.findChildren(QtWidgets.QCheckBox,
-                                            QRegularExpression(
-                                                     "device\\d_signal\\d"))
+        signal_controls = self.findChildren(
+                QtWidgets.QCheckBox,
+                QRegularExpression("device\\d_signal\\d"))
         for control in signal_controls:
             policy = control.sizePolicy()
             policy.setRetainSizeWhenHidden(True)
@@ -256,12 +254,13 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
             control.setEnabled(True)
         # Show available channels
         channel_controls = [channel for channel in device_group.findChildren(
-                QtWidgets.QRadioButton)]
+                QtWidgets.QRadioButton, QRegularExpression("channel\\d"))]
+        channels = new_device.get_channels()
         # FIXME [floonone-20170906] don't use static method
-        for i in range(new_device.__class__.get_channels()):
+        for i in range(channels):
             channel_controls[i].setEnabled(True)
             channel_controls[i].setVisible(True)
-        for i in range(new_device.__class__.get_channels(), 4):
+        for i in range(channels, 4):
             channel_controls[i].setEnabled(False)
             channel_controls[i].setVisible(False)
         # Select the first channel by default
