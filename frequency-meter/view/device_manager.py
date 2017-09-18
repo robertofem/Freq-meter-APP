@@ -57,11 +57,11 @@ class DevManagerWindow(QtWidgets.QDialog, device_interface.Ui_DevManagerWindow):
             self.__signal_number_labels[i].setVisible(False)
             self.__signal_type_labels[i].setVisible(False)
         # Set impedances
-        if "50" in vendor_data["impedances"]:
+        if "50Ω" in vendor_data["impedances"]:
             self.impedance_50.setChecked(True)
         else:
             self.impedance_50.setChecked(False)
-        if "1M" in vendor_data["impedances"]:
+        if "1MΩ" in vendor_data["impedances"]:
             self.impedance_1m.setChecked(True)
         else:
             self.impedance_1m.setChecked(False)

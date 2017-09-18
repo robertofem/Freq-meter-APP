@@ -123,7 +123,7 @@ class FreqMeter(abc.ABC):
         return self._send("*RST")
 
     @abc.abstractmethod
-    def start_measurement(self, sample_time, channel):
+    def start_measurement(self, sample_time, channel, impedance):
         self._measurement_data = self.__init_measurement_data()
         self._active_channel = channel
         return
@@ -172,10 +172,11 @@ class UviFreqMeter(FreqMeter):
 
     @classmethod
     def get_impedances(cls):
-        return ["50", "1M"]
+        return ["50Ω", "1MΩ"]
 
-    def start_measurement(self, sample_time, channel):
-        super(UviFreqMeter, self).start_measurement(sample_time, channel)
+    def start_measurement(self, sample_time, channel, impedance):
+        super(UviFreqMeter, self).start_measurement(sample_time, channel,
+                                                    impedance)
         self.reset()
         self._send("SENS:MODE:SAVELAST", True)
         self._send("SENS:FREQ:ALL:ARM:TIM {}".format(sample_time), True)
@@ -248,10 +249,11 @@ class AgilentFreqMeter(FreqMeter):
 
     @classmethod
     def get_impedances(cls):
-        return ["50", "1M"]
+        return ["50Ω", "1MΩ"]
 
-    def start_measurement(self, sample_time, channel):
-        super(AgilentFreqMeter, self).start_measurement(sample_time, channel)
+    def start_measurement(self, sample_time, channel, impedance):
+        super(AgilentFreqMeter, self).start_measurement(sample_time, channel,
+                                                        impedance)
         self.reset()
         self._send("*CLS")
         self._send("*SRE 0")
@@ -286,10 +288,11 @@ class TestFreqMeter(FreqMeter):
 
     @classmethod
     def get_impedances(cls):
-        return ["50", "1M"]
+        return ["50Ω", "1MΩ"]
 
-    def start_measurement(self, sample_time, channel):
-        super(TestFreqMeter, self).start_measurement(sample_time, channel)
+    def start_measurement(self, sample_time, channel, impedance):
+        super(TestFreqMeter, self).start_measurement(sample_time, channel,
+                                                     impedance)
         return
 
     def _fetch_freq(self):

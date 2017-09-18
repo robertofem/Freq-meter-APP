@@ -146,8 +146,7 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         self.popup = device_manager.DevManagerWindow()
         self.popup.exec_()
         self.popup = None
-        for slot in range(2):
-            self.updateDevCombobox(self.DevComboBox[slot])
+        self.__fill_device_selectors()
         logger.info("Updated devices list")
         return
 
@@ -160,8 +159,8 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
 
     def __setup_device_controls(self):
         self.__fill_device_selectors()
-        self.__setup_signal_channel_controls()
-        self.__setup_device_control_button()
+        self.__setup_measurement_selectors()
+        self.__setup_device_selection_button()
 
     def __fill_device_selectors(self):
         devices_list = [os.path.basename(match)[:-4]
@@ -173,11 +172,21 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
             selector.addItems(devices_list)
         return
 
-    def __setup_signal_channel_controls(self):
+    def __setup_measurement_selectors(self):
         channel_controls = self.findChildren(
                 QtWidgets.QRadioButton,
                 QRegularExpression("device\\d_channel\\d"))
         for control in channel_controls:
+            policy = control.sizePolicy()
+            policy.setRetainSizeWhenHidden(True)
+            control.setSizePolicy(policy)
+            control.setEnabled(False)
+            control.setVisible(False)
+
+        impedance_controls = self.findChildren(
+                QtWidgets.QRadioButton,
+                QRegularExpression("device\\d_impedance\\d"))
+        for control in impedance_controls:
             policy = control.sizePolicy()
             policy.setRetainSizeWhenHidden(True)
             control.setSizePolicy(policy)
@@ -194,7 +203,7 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
             control.setEnabled(False)
             control.setVisible(False)
 
-    def __setup_device_control_button(self):
+    def __setup_device_selection_button(self):
         device_connects = self.findChildren(
                 QtWidgets.QPushButton, QRegularExpression("\\d_connect"))
         for i, connect in enumerate(device_connects):
@@ -256,7 +265,6 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         channel_controls = [channel for channel in device_group.findChildren(
                 QtWidgets.QRadioButton, QRegularExpression("channel\\d"))]
         channels = new_device.get_channels()
-        # FIXME [floonone-20170906] don't use static method
         for i in range(channels):
             channel_controls[i].setEnabled(True)
             channel_controls[i].setVisible(True)
@@ -265,11 +273,23 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
             channel_controls[i].setVisible(False)
         # Select the first channel by default
         channel_controls[0].setChecked(True)
+        # Show available impedances
+        impedance_controls = [channel for channel in device_group.findChildren(
+                QtWidgets.QRadioButton, QRegularExpression("impedance\\d"))]
+        impedances = new_device.get_impedances()
+        for i in range(len(impedances)):
+            impedance_controls[i].setText(impedances[i])
+            impedance_controls[i].setEnabled(True)
+            impedance_controls[i].setVisible(True)
+        for i in range(len(impedances), 4):
+            impedance_controls[i].setText("")
+            impedance_controls[i].setEnabled(False)
+            impedance_controls[i].setVisible(False)
+        impedance_controls[0].setChecked(True)
         # Show available signals
         signal_controls = [signal for signal in device_group.findChildren(
                 QtWidgets.QCheckBox)]
         signals = new_device.get_signals()
-        # FIXME [floonone-20170906] don't use static method
         for i in range(len(signals)):
             signal_controls[i].setText(signals[i])
             signal_controls[i].setEnabled(True)
@@ -294,9 +314,19 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         # Disable signal and channel controls
         for control in device_group.findChildren(QtWidgets.QGroupBox):
             control.setEnabled(False)
-        channel_controls = [channel for channel in device_group.findChildren(
-                QtWidgets.QRadioButton)]
+        channel_controls = [
+            channel for channel in device_group.findChildren(
+                QtWidgets.QRadioButton,
+                QRegularExpression("channel\\d"))]
         for control in channel_controls:
+            control.setChecked(False)
+            control.setEnabled(False)
+            control.setVisible(False)
+        impedance_controls = [
+            impedance for impedance in device_group.findChildren(
+                    QtWidgets.QRadioButton,
+                    QRegularExpression("impedance\\d"))]
+        for control in impedance_controls:
             control.setChecked(False)
             control.setEnabled(False)
             control.setVisible(False)
@@ -333,6 +363,8 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
             device.findChild(QtWidgets.QPushButton).setEnabled(False)
             device.findChild(QtWidgets.QGroupBox,
                              "device{}_channels".format(i)).setEnabled(False)
+            device.findChild(QtWidgets.QGroupBox,
+                             "device{}_impedances".format(i)).setEnabled(False)
 
         fetch_time = self.fetch_time.value()
         sample_time = self.fetch_time.value()
@@ -363,6 +395,8 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
             device.findChild(QtWidgets.QPushButton).setEnabled(True)
             device.findChild(QtWidgets.QGroupBox,
                              "device{}_channels".format(i)).setEnabled(True)
+            device.findChild(QtWidgets.QGroupBox,
+                             "device{}_impedances".format(i)).setEnabled(True)
             if not device.property("name"):
                 device.findChild(QtWidgets.QComboBox).setEnabled(True)
 
@@ -382,14 +416,16 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
             name = device_control.property("name")
             selected_channel = None
             for j, channel in enumerate(device_control.findChildren(
-                    QtWidgets.QRadioButton)):
+                    QtWidgets.QRadioButton,
+                    QRegularExpression("channel\\d"))):
                 if channel.isChecked():
                     selected_channel = j
             channel_measurements = measurements[selected_channel]
             for signal in filter(
                     lambda x: x.isChecked(),
                     device_control.findChildren(QtWidgets.QCheckBox)):
-                signal_values = [measurement[signal.text()]
+                signal_values = [
+                    measurement[signal.text()]
                     for measurement in channel_measurements.values()]
                 # Draw the plot
                 self.ax.plot(signal_values, label="{} Ch-{} {}".format(

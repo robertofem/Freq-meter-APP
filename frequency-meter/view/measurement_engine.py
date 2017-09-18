@@ -52,7 +52,8 @@ class MeasurementEngine(QtCore.QObject):
 
         # Tell the instruments to start measuring
         for instrument in self.__devices:
-            instrument.start_measurement(sample_time, 0)
+            # TODO [floonone-20170918] pass selected measuring parameters
+            instrument.start_measurement(sample_time, 0, "1MΩ")
 
         # Create a measurement timer object
         self.__measurement = MeasurementTimer(self.__devices, fetch_time)
