@@ -3,8 +3,6 @@ import copy
 import logging
 # Third party libraries
 from PyQt5 import QtCore
-# Local libraries
-from view import instrument_data
 
 logger = logging.getLogger("view")
 
@@ -33,10 +31,9 @@ class MeasurementEngine(QtCore.QObject):
         """
         QtCore.QObject.__init__(self)
         self.__threaded = threaded
-        self._timer = None
-        self._thread = None
+        self.__thread = None
 
-    def start(self, devices, fetch_time, sample_time):
+    def start(self, devices, fetch_time):
         """
         Start periodic measurements with the instruments specified
 
@@ -45,15 +42,7 @@ class MeasurementEngine(QtCore.QObject):
         sample_time: gate_time or time used by the instrument to calculate
             one measurement, in seconds
         """
-        # Generate a clean internal device list without Nones in it
-        self.__devices = []
-        for device in devices:
-            self.__devices.append(device)
-
-        # Tell the instruments to start measuring
-        for instrument in self.__devices:
-            # TODO [floonone-20170918] pass selected measuring parameters
-            instrument.start_measurement(sample_time, 0, "1MΩ")
+        self.__devices = devices
 
         # Create a measurement timer object
         self.__measurement = MeasurementTimer(self.__devices, fetch_time)
@@ -63,9 +52,9 @@ class MeasurementEngine(QtCore.QObject):
 
         # Move the measurement timer to a new thread if threaded type requested
         if self.__threaded:
-            self._thread = QtCore.QThread()
-            self.__measurement.moveToThread(self._thread)
-            self._thread.start(QtCore.QThread.HighestPriority)
+            self.__thread = QtCore.QThread()
+            self.__measurement.moveToThread(self.__thread)
+            self.__thread.start(QtCore.QThread.HighestPriority)
 
         # Start the timer
         self._startTimer.emit()
@@ -80,12 +69,12 @@ class MeasurementEngine(QtCore.QObject):
         # Stop timer
         self._stopTimer.emit()
 
-        if self.__threaded and self._thread:
+        if self.__threaded and self.__thread:
             # Tell the thread to end and wait for its actual end
-            self._thread.exit()
-            self._thread.wait()
+            self.__thread.exit()
+            self.__thread.wait()
             # Destroy the thread object
-            self._thread = None
+            self.__thread = None
 
         logger.debug("Sampling finished")
         return

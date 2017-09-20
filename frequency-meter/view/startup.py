@@ -351,6 +351,11 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         self.save.pressed.connect(self.__save_data)
 
     def __start_plot(self):
+        # Get general measuring parameters
+        fetch_time = self.fetch_time.value()
+        sample_time = self.fetch_time.value()
+        plot_time = min(500, fetch_time*1000)
+
         # Block controls
         self.start.setEnabled(False)
         self.stop.setEnabled(True)
@@ -366,11 +371,29 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
             device.findChild(QtWidgets.QGroupBox,
                              "device{}_impedances".format(i)).setEnabled(False)
 
-        fetch_time = self.fetch_time.value()
-        sample_time = self.fetch_time.value()
-        plot_time = min(500, fetch_time*1000)
+        # Start devices measurement
+        for i, device in self.__devices.items():
+            # Obtain selected channel
+            channel_controls = self.findChild(
+                    QtWidgets.QGroupBox, "device{}_channels".format(i))
+            channel_controls = channel_controls.findChildren(
+                    QtWidgets.QRadioButton)
+            selected_channel = [c for c in filter(
+                    lambda c: c.isChecked(), channel_controls)][0]
+            channel = int(selected_channel.text()) - 1
+            # Obtain selected impedance
+            impedance_controls = self.findChild(
+                    QtWidgets.QGroupBox, "device{}_impedances".format(i))
+            impedance_controls = impedance_controls.findChildren(
+                    QtWidgets.QRadioButton)
+            selected_impedance = [c for c in filter(
+                    lambda c: c.isChecked(), impedance_controls)][0]
+            impedance = selected_impedance.text()
+            # Start measurement
+            device.start_measurement(sample_time, channel, impedance)
+
         # Start the measurement engine
-        self.m_engine.start(self.__devices.values(), fetch_time, sample_time)
+        self.m_engine.start(self.__devices.values(), fetch_time)
         logger.debug("Measurement started")
 
         # Start the timer to update plots
