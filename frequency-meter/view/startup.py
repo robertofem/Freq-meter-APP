@@ -2,6 +2,7 @@
 """Application main executable, for initializing the whole program"""
 # Standard libraries
 import glob
+import json
 import logging
 import os
 import sys
@@ -347,8 +348,7 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
     def __setup_plot(self):
         self.start.pressed.connect(self.__start_plot)
         self.stop.pressed.connect(self.__stop_plot)
-        # TODO [floonone-20170907] save button
-        self.save.setEnabled(False)
+        self.save.pressed.connect(self.__save_data)
 
     def __start_plot(self):
         # Block controls
@@ -440,6 +440,61 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
 
         self.canvas.draw()
         return
+
+    def __save_data(self):
+        # Create data to export
+        measurements = []
+        measurement_counts = []
+        data_header = ""
+        for key, device in self.__devices.items():
+            # Only one channel has measurement data
+            device_data = [fd for fd in filter(
+                    lambda md: len(md) > 0, device.get_measurement_data())]
+            # If there is no data, stop processing device
+            if not len(device_data):
+                continue
+            # If there is data, add signals to data_header and save measurements
+            device_data = device_data[0]
+            if len(data_header) > 0:
+                data_header += "\t"
+            data_header += "timestamp{}".format(key+1)
+            signals = device.get_signals()
+            for signal in signals:
+                data_header += "\t"
+                data_header += signal
+            device_measurements = []
+            for t, m in device_data.items():
+                measurement = t.strftime("%Y-%m-%d_%H:%M:%S.%f")
+                for signal in signals:
+                    measurement += "\t"
+                    measurement += str(m[signal])
+                device_measurements.append(measurement)
+            measurements.append(device_measurements)
+            measurement_counts.append(len(device_measurements))
+
+        if not len(measurement_counts):
+            logger.info("No data to save")
+            return
+        elif any(map(lambda n: n != measurement_counts[0], measurement_counts)):
+            logger.error("Not the same measurement count")
+            return
+
+        # If everything is all right, build measurement rows
+        data_lines = [data_header]
+        for i in range(measurement_counts[0]):
+            measurement = measurements[0][i]
+            for j in range(1, len(measurements)):
+                measurement += "\t"
+                measurement += measurements[j][i]
+            data_lines.append(measurement)
+
+        # Obtain file to save the data
+        file = QtWidgets.QFileDialog.getSaveFileName(self, "Save file", "")[0]
+        if not file:
+            logger.warning("No file selected")
+            return
+        with open(file, "w") as openfile:
+            openfile.writelines("{}\n".format(l) for l in data_lines)
 
     def update_logger_level(self):
         """Evaluate the check boxes states and update logger level."""

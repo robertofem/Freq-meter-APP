@@ -75,7 +75,7 @@ class FreqMeter(abc.ABC):
                 self._dev_data['communications'])
         self.__connected = False
         self._active_channel = None
-        self._measurement_data = None
+        self._measurement_data = self.__init_measurement_data()
 
     def __init_measurement_data(self):
         measurement_data = []
@@ -134,7 +134,7 @@ class FreqMeter(abc.ABC):
             logger.error("Couldn't fetch frequency")
             return
         fetch_time = datetime.datetime.now()
-        logger.info("Fetch time: {}".format(
+        logger.debug("Fetch time: {}".format(
                 fetch_time.strftime("%H:%M:%S.%f")))
         values = reply.split(",")
         values = [float(value) for value in values]
