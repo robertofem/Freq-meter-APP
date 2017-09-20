@@ -445,6 +445,7 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         # Create data to export
         measurements = []
         measurement_counts = []
+        file_header = ""
         data_header = ""
         for key, device in self.__devices.items():
             # Only one channel has measurement data
@@ -454,6 +455,8 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
             if not len(device_data):
                 continue
             # If there is data, add signals to data_header and save measurements
+            file_header += "Device {}: {}\n".format(key+1, device.get_name())
+
             device_data = device_data[0]
             if len(data_header) > 0:
                 data_header += "\t"
@@ -480,7 +483,7 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
             return
 
         # If everything is all right, build measurement rows
-        data_lines = [data_header]
+        data_lines = [file_header, data_header]
         for i in range(measurement_counts[0]):
             measurement = measurements[0][i]
             for j in range(1, len(measurements)):

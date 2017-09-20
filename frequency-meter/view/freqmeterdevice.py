@@ -70,6 +70,7 @@ class FreqMeter(abc.ABC):
         # Read and load the device configuration file
         with open(dev_path, 'r') as read_file:
             self._dev_data = yaml.load(read_file)
+        self.__name = self._dev_data["general"]["Name"]
         # Communication
         self.__client = clientprotocol.Client.get_client(
                 self._dev_data['communications'])
@@ -83,6 +84,9 @@ class FreqMeter(abc.ABC):
             signal_measurements = OrderedDict()
             measurement_data.append(signal_measurements)
         return measurement_data
+
+    def get_name(self):
+        return self.__name
 
     def connect(self):
         """
