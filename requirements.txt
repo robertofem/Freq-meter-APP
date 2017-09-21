@@ -8,3 +8,5 @@ sphinx-autobuild==0.6.0
 virtualenv==15.0.3
 PyVISA==1.8
 PyQt5==5.9
+PyYAML
+pyvisa-py
