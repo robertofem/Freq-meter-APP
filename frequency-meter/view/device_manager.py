@@ -212,10 +212,12 @@ class DevManagerWindow(QtWidgets.QDialog, device_interface.Ui_DevManagerWindow):
             self.CommLabel_1.setVisible(True)
             self.CommLabel_1.setText("IP:")
             self.CommText_1.setVisible(True)
+            self.CommText_1.setPlaceholderText("0.0.0.0")
             # Property 2 settings.
             self.CommLabel_2.setVisible(True)
             self.CommLabel_2.setText("Port:")
             self.CommText_2.setVisible(True)
+            self.CommText_2.setPlaceholderText("0")
             # Property 3 settings.
             self.CommLabel_3.setVisible(False)
             self.CommText_3.setVisible(False)
@@ -259,18 +261,22 @@ class DevManagerWindow(QtWidgets.QDialog, device_interface.Ui_DevManagerWindow):
             self.CommLabel_1.setVisible(True)
             self.CommLabel_1.setText("Ethernet Board:")
             self.CommText_1.setVisible(True)
+            self.CommText_1.setPlaceholderText("0")
             # Property 2 settings.
             self.CommLabel_2.setVisible(True)
             self.CommLabel_2.setText("IP:")
             self.CommText_2.setVisible(True)
+            self.CommText_2.setPlaceholderText("0.0.0.0")
             # Property 3 settings.
             self.CommLabel_3.setVisible(True)
             self.CommLabel_3.setText("LAN Device:")
             self.CommText_3.setVisible(True)
+            self.CommText_3.setPlaceholderText("gpib0")
             # Property 4 settings.
             self.CommLabel_4.setVisible(True)
             self.CommLabel_4.setText("GPIB Address:")
             self.CommText_4.setVisible(True)
+            self.CommText_4.setPlaceholderText("1")
         elif self.CommProtocolBox.currentText() == "Test":
             self.CommPropertiesgroupBox.setVisible(False)
             # Property 1 settings.
