@@ -11,11 +11,11 @@ class Client(abc.ABC):
         if communications["Protocol"] == "TCP/IP":
             return TCPIPClient(communications["Properties"]['CommProp1'],
                                communications["Properties"]['CommProp2'])
-        elif communications["Protocol"] == "VISA":
-            return VISAClient(communications["Properties"]['CommProp1'],
-                              communications["Properties"]['CommProp2'],
-                              communications["Properties"]['CommProp3'],
-                              communications["Properties"]['CommProp4'])
+        elif communications["Protocol"] == "VISA-TCP/IP":
+            return VISATCPIPClient(communications["Properties"]['CommProp1'],
+                                   communications["Properties"]['CommProp2'],
+                                   communications["Properties"]['CommProp3'],
+                                   communications["Properties"]['CommProp4'])
         elif communications["Protocol"] == "Test":
             return TestClient()
         else:
@@ -87,7 +87,7 @@ class TCPIPClient(Client):
         return success, reply
 
 
-class VISAClient(Client):
+class VISATCPIPClient(Client):
     def __init__(self, ethernet_board, host_ip, lan_device, gpib_address):
         self.__ethernet_board = ethernet_board
         self.__host_ip = host_ip

@@ -253,7 +253,7 @@ class DevManagerWindow(QtWidgets.QDialog, device_interface.Ui_DevManagerWindow):
             # Property 4 settings.
             self.CommLabel_4.setVisible(False)
             self.CommText_4.setVisible(False)
-        elif self.CommProtocolBox.currentText() == "VISA":
+        elif self.CommProtocolBox.currentText() == "VISA-TCP/IP":
             self.CommPropertiesgroupBox.setVisible(True)
             # Property 1 settings.
             self.CommLabel_1.setVisible(True)

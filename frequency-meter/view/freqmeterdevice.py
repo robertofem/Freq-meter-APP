@@ -249,7 +249,7 @@ class AgilentFreqMeter(FreqMeter):
 
     @classmethod
     def get_protocols(cls):
-        return ["VISA"]
+        return ["VISA-TCP/IP"]
 
     @classmethod
     def get_impedances(cls):
