@@ -189,8 +189,11 @@ class UviFreqMeter(FreqMeter):
     def _fetch_freq(self):
         return self._send("FETCH:FREQ:ALL", True)
 
+    def set_coarse_calib(self, M):
+        self._send("CAL:COARSE {:.14}".format(M), True)
+
     def cdt_start(self, gate_time, number_of_measurements):
-        self._send("CDT:ARM:TIM {},{}".format(gate_time,
+        self._send("CDT:ARM:TIM {:.14},{}".format(gate_time,
                                               number_of_measurements),
                    True)
 
