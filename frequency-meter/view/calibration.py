@@ -16,6 +16,7 @@ from view import freqmeterdevice
 
 logger = logging.getLogger('view')
 
+
 class CalibWindow(QtWidgets.QDialog, calibration_interface.Ui_CalibWindow):
     """
     Class for defining the behaviour of the Device Manager Interface.
@@ -24,11 +25,16 @@ class CalibWindow(QtWidgets.QDialog, calibration_interface.Ui_CalibWindow):
         QtWidgets.QDialog.__init__(self)
         self.setupUi(self)
 
-        #Connect/Disconnect buttons
-        self.target_dev_connect.pressed.connect(lambda dev_type="target_dev":
-            self.__on_device_control_button_press(dev_type))
-        self.ref_dev_connect.pressed.connect(lambda dev_type="ref_dev":
-            self.__on_device_control_button_press(dev_type))
+        # Connect/Disconnect buttons
+        self.target_device_connect.pressed.connect(
+                lambda dev_type="target":
+                self.__on_device_control_button_press(dev_type))
+        self.reference_device_connect.pressed.connect(
+                lambda dev_type="reference":
+                self.__on_device_control_button_press(dev_type))
+        # Measurement selector buttons
+        self.__setup_measurement_selectors()
+
         # Start and Stop Buttons events
         self.button_start_coarse.clicked.connect(self.__start_coarse)
         self.button_stop_coarse.clicked.connect(self.__stop_coarse)
@@ -37,7 +43,7 @@ class CalibWindow(QtWidgets.QDialog, calibration_interface.Ui_CalibWindow):
         # Button box events (accept/reject)
         self.buttonBox.clicked.connect(self.__handle_buttonBox_click)
 
-        #Initialize coarse calibration plots
+        # Initialize coarse calibration plots
         self.figure_coarse = plt.figure(figsize=(4.5, 3))
         self.figure_coarse.patch.set_alpha(0)
         self.canvas_coarse = FigureCanvas(self.figure_coarse)
@@ -48,7 +54,7 @@ class CalibWindow(QtWidgets.QDialog, calibration_interface.Ui_CalibWindow):
         self.ax_coarse.set_ylabel("F(Hz)", rotation= 'horizontal')
         self.ax_coarse.yaxis.set_label_coords(-0.05, 1.04)
 
-        #Initialize fine calibration plots
+        # Initialize fine calibration plots
         self.figure_fine = plt.figure(figsize=(4.5, 4.5))
         self.figure_fine.patch.set_alpha(0)
         self.canvas_fine = FigureCanvas(self.figure_fine)
@@ -61,36 +67,57 @@ class CalibWindow(QtWidgets.QDialog, calibration_interface.Ui_CalibWindow):
         self.ax_fine_dnl.grid()
         self.ax_fine_inl.grid()
 
-        #populate target (to be calibrated) listbox with only FPGA freq meters
+        # populate target (to be calibrated) listbox with only FPGA freq meters
         self.__populate_target_combobox()
-        #populate list with reference devices with all devices
+        # populate list with reference devices with all devices
         self.__populate_reference_combobox()
 
-        #create devices for target and reference
+        # create devices for target and reference
         self.target_dev = None
         self.ref_dev = None
 
+    def __setup_measurement_selectors(self):
+        channel_controls = self.findChildren(
+                QtWidgets.QRadioButton,
+                QRegularExpression("device_channel\\d"))
+        for control in channel_controls:
+            policy = control.sizePolicy()
+            policy.setRetainSizeWhenHidden(True)
+            control.setSizePolicy(policy)
+            control.setEnabled(False)
+            control.setVisible(False)
+
+        impedance_controls = self.findChildren(
+                QtWidgets.QRadioButton,
+                QRegularExpression("device_impedance\\d"))
+        for control in impedance_controls:
+            policy = control.sizePolicy()
+            policy.setRetainSizeWhenHidden(True)
+            control.setSizePolicy(policy)
+            control.setEnabled(False)
+            control.setVisible(False)
+
     def __populate_target_combobox(self):
-        #clear the combobox
-        self.target_dev_selector.clear()
-        #open all files and add devices which vendor is "Uvigo"
+        # clear the combobox
+        self.target_device_selector.clear()
+        # open all files and add devices which vendor is "Uvigo"
         device_names_list = [os.path.basename(match)[:-4]
-                        for match in glob.glob('resources/devices/*yml')]
+                             for match in glob.glob('resources/devices/*yml')]
         for device_name in device_names_list:
             dev_dir = "{}/resources/devices/".format(os.getcwd())
             dev_path = "{}{}.yml".format(dev_dir, device_name)
             new_device = freqmeterdevice.FreqMeter.get_freq_meter(dev_path)
             if new_device.get_vendor_name() == "Uvigo":
-                self.target_dev_selector.addItem(device_name)
+                self.target_device_selector.addItem(device_name)
         return
 
     def __populate_reference_combobox(self):
-        #clear the combobox
-        self.ref_dev_selector.clear()
-        #add all devices
+        # clear the combobox
+        self.reference_device_selector.clear()
+        # add all devices
         device_names_list = [os.path.basename(match)[:-4]
-                        for match in glob.glob('resources/devices/*yml')]
-        self.ref_dev_selector.addItems(device_names_list)
+                             for match in glob.glob('resources/devices/*yml')]
+        self.reference_device_selector.addItems(device_names_list)
         return
 
     def __handle_buttonBox_click(self, button):
@@ -114,35 +141,27 @@ class CalibWindow(QtWidgets.QDialog, calibration_interface.Ui_CalibWindow):
             self.close()
         return
 
-    def __on_device_control_button_press(self, dev_type):
-        button_pressed = self.findChild(QtWidgets.QPushButton,
-            "{}_connect".format(dev_type))
-        if button_pressed.text()=="Disconnect":
-            self.__disconnect_dev(dev_type)
-        else:
-            self.__connect_dev(dev_type)
-
-    def __connect_dev(self, dev_type):
+    def __on_device_control_button_press(self, device):
         device_group = self.findChild(QtWidgets.QGroupBox,
-                                      "{}_group".format(dev_type))
+                                      "{}_device".format(device))
+        if device_group.property("name"):
+            self.__disconnect_device(device)
+        else:
+            self.__connect_device(device)
+
+    def __connect_device(self, device):
+        device_group = self.findChild(QtWidgets.QGroupBox,
+                                      "{}_device".format(device))
         name = device_group.findChild(QtWidgets.QComboBox).currentText()
 
         # check if the other device is the same and it is connected
-        if dev_type == "ref_dev":
-            current_dev = self.ref_dev
-            other_dev = self.ref_dev
-            other_type = "target_dev"
+        if device == "reference":
+            other_device = self.target_device
         else:
-            current_dev = self.target_dev
-            other_dev = self.target_dev
-            other_type = "ref_dev"
-        other_group = self.findChild(QtWidgets.QGroupBox,
-                                      "{}_group".format(other_type))
-        other_name = other_group.findChild(QtWidgets.QComboBox).currentText()
-        if other_dev != None:
-            if other_dev.is_connected() and name == other_name:
-                logger.warning("This device is already connected");
-                return
+            other_device = self.reference_device
+        if name == other_device.property("name"):
+            logger.warning("This device is already connected")
+            return
 
         # path join
         dev_dir = "{}/resources/devices/".format(os.getcwd())
@@ -161,7 +180,6 @@ class CalibWindow(QtWidgets.QDialog, calibration_interface.Ui_CalibWindow):
                     name))
             return
         logger.info("Connected to device {}".format(name))
-        current_dev = new_device
 
         # Change the button text to Disconnect
         device_group.findChild(QtWidgets.QPushButton).setText("Disconnect")
@@ -173,7 +191,6 @@ class CalibWindow(QtWidgets.QDialog, calibration_interface.Ui_CalibWindow):
         # Show available channels
         channel_controls = [channel for channel in device_group.findChildren(
                 QtWidgets.QRadioButton, QRegularExpression("channel\\d"))]
-        print(channel_controls)
         channels = new_device.get_channels()
         for i in range(channels):
             channel_controls[i].setEnabled(True)
@@ -196,11 +213,41 @@ class CalibWindow(QtWidgets.QDialog, calibration_interface.Ui_CalibWindow):
             impedance_controls[i].setVisible(False)
         impedance_controls[0].setChecked(True)
 
+        device_group.setProperty("name", name)
+        return
 
-    def __disconnect_dev(self, dev_type):
-        logger.info("disconnect {}".format(dev_type))
-        # Change the button text to Disconnect
-        # device_group.findChild(QtWidgets.QPushButton).setText("Connect")
+    def __disconnect_device(self, device):
+        device_group = self.findChild(QtWidgets.QGroupBox,
+                                      "{}_device".format(device))
+        # Change the button text to Connect
+        device_group.findChild(QtWidgets.QPushButton).setText("Connect")
+        # Enable selector
+        device_group.findChild(QtWidgets.QComboBox).setEnabled(True)
+        # Disable signal and channel controls
+        for control in device_group.findChildren(QtWidgets.QGroupBox):
+            control.setEnabled(False)
+        channel_controls = [
+            channel for channel in device_group.findChildren(
+                QtWidgets.QRadioButton,
+                QRegularExpression("channel\\d"))]
+        for control in channel_controls:
+            control.setChecked(False)
+            control.setEnabled(False)
+            control.setVisible(False)
+        impedance_controls = [
+            impedance for impedance in device_group.findChildren(
+                    QtWidgets.QRadioButton,
+                    QRegularExpression("impedance\\d"))]
+        for control in impedance_controls:
+            control.setChecked(False)
+            control.setEnabled(False)
+            control.setVisible(False)
+
+        logger.info("Disconnected from device {}".format(
+                device_group.property("name")))
+
+        device_group.setProperty("name", None)
+        return
 
     def __start_coarse(self):
         """
@@ -210,7 +257,7 @@ class CalibWindow(QtWidgets.QDialog, calibration_interface.Ui_CalibWindow):
 
         #Check that target and reference devices are different
         if target_name == ref_name:
-            logger.error("Target device and reference device are the same");
+            logger.error("Target device and reference device are the same")
             return
 
         #Obtain the path of the target and reference devices
