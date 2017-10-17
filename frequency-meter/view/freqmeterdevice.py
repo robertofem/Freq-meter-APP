@@ -279,7 +279,7 @@ class AgilentFreqMeter(FreqMeter):
 class TestFreqMeter(FreqMeter):
     @classmethod
     def get_vendor_name(cls):
-        return "Test"
+        return "Uvigo"
 
     @classmethod
     def get_channels(cls):

@@ -34,7 +34,7 @@
         <item>
          <layout class="QVBoxLayout" name="verticalLayout_2">
           <item>
-           <widget class="QGroupBox" name="groupBox_5">
+           <widget class="QGroupBox" name="ref_dev_group">
             <property name="title">
              <string>Reference device</string>
             </property>
@@ -42,7 +42,7 @@
              <item>
               <layout class="QVBoxLayout" name="verticalLayout_5">
                <item>
-                <widget class="QComboBox" name="cBoxRefDev"/>
+                <widget class="QComboBox" name="ref_dev_selector"/>
                </item>
                <item>
                 <widget class="QPushButton" name="ref_dev_connect">
@@ -330,7 +330,7 @@
    <item row="0" column="1">
     <layout class="QHBoxLayout" name="horizontalLayout_3">
      <item>
-      <widget class="QGroupBox" name="groupBox_3">
+      <widget class="QGroupBox" name="target_dev_group">
        <property name="title">
         <string>Target device (to be calibrated)</string>
        </property>
@@ -338,7 +338,7 @@
         <item>
          <layout class="QVBoxLayout" name="verticalLayout">
           <item>
-           <widget class="QComboBox" name="cBoxTargetDev"/>
+           <widget class="QComboBox" name="target_dev_selector"/>
           </item>
           <item>
            <widget class="QPushButton" name="target_dev_connect">
@@ -368,7 +368,7 @@
           </property>
           <widget class="QRadioButton" name="target_dev_channel0">
            <property name="enabled">
-            <bool>false</bool>
+            <bool>true</bool>
            </property>
            <property name="geometry">
             <rect>
@@ -384,7 +384,7 @@
           </widget>
           <widget class="QRadioButton" name="target_dev_channel2">
            <property name="enabled">
-            <bool>false</bool>
+            <bool>true</bool>
            </property>
            <property name="geometry">
             <rect>
@@ -400,7 +400,7 @@
           </widget>
           <widget class="QRadioButton" name="target_dev_channel3">
            <property name="enabled">
-            <bool>false</bool>
+            <bool>true</bool>
            </property>
            <property name="geometry">
             <rect>
@@ -416,7 +416,7 @@
           </widget>
           <widget class="QRadioButton" name="target_dev_channel1">
            <property name="enabled">
-            <bool>false</bool>
+            <bool>true</bool>
            </property>
            <property name="geometry">
             <rect>
@@ -529,6 +529,32 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>target_dev_selector</tabstop>
+  <tabstop>target_dev_connect</tabstop>
+  <tabstop>target_dev_channel0</tabstop>
+  <tabstop>target_dev_channel1</tabstop>
+  <tabstop>target_dev_channel2</tabstop>
+  <tabstop>target_dev_channel3</tabstop>
+  <tabstop>target_dev_impedance0</tabstop>
+  <tabstop>target_dev_impedance1</tabstop>
+  <tabstop>target_dev_impedance2</tabstop>
+  <tabstop>target_dev_impedance3</tabstop>
+  <tabstop>ref_dev_selector</tabstop>
+  <tabstop>ref_dev_connect</tabstop>
+  <tabstop>ref_dev_channel0</tabstop>
+  <tabstop>ref_dev_channel1</tabstop>
+  <tabstop>ref_dev_channel2</tabstop>
+  <tabstop>ref_dev_channel3</tabstop>
+  <tabstop>ref_dev_impedance0</tabstop>
+  <tabstop>ref_dev_impedance1</tabstop>
+  <tabstop>ref_dev_impedance2</tabstop>
+  <tabstop>ref_dev_impedance3</tabstop>
+  <tabstop>button_start_coarse</tabstop>
+  <tabstop>button_stop_coarse</tabstop>
+  <tabstop>button_start_fine</tabstop>
+  <tabstop>button_stop_fine</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

@@ -233,7 +233,8 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
             logger.warning("Device {} is already selected in the other slot"
                            "".format(name))
             return False
-        # FIXME [floonone-20170906] path join
+
+        # path join
         dev_dir = "{}/resources/devices/".format(os.getcwd())
         dev_path = "{}{}.yml".format(dev_dir, name)
         if not glob.glob(dev_path):
