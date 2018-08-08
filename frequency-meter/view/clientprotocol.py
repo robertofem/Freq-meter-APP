@@ -77,7 +77,7 @@ class TCPIPClient(Client):
             return False, ""
         # Read back the answer from the server.
         try:
-            reply = self.__socket.recv(100)
+            reply = self.__socket.recv(4000)
         except socket.timeout:
             reply = ""
             success = False

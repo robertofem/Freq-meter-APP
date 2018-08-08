@@ -164,7 +164,7 @@ class UviFreqMeter(FreqMeter):
 
     @classmethod
     def get_channels(cls):
-        return 1
+        return 2
 
     @classmethod
     def get_signals(cls):
@@ -181,6 +181,7 @@ class UviFreqMeter(FreqMeter):
     def start_measurement(self, sample_time, channel, impedance):
         super(UviFreqMeter, self).start_measurement(sample_time, channel,
                                                     impedance)
+        self._send("CHANNEL {}".format(channel+1), True)
         self.reset()
         self._send("SENS:MODE:SAVELAST", True)
         self._send("SENS:FREQ:ALL:ARM:TIM {}".format(sample_time), True)
@@ -189,16 +190,19 @@ class UviFreqMeter(FreqMeter):
     def _fetch_freq(self):
         return self._send("FETCH:FREQ:ALL", True)
 
-    def set_coarse_calib(self, M):
+    def coarse_calibration(self, M):
         self._send("CAL:COARSE {:.14}".format(M), True)
 
-    def cdt_start(self, gate_time, number_of_measurements):
+    def cdt_start(self, gate_time, number_of_measurements, channel):
+        self._send("CHANNEL {}".format((channel+1)), True)
+        self.reset()
         self._send("CDT:ARM:TIM {:.14},{}".format(gate_time,
                                               number_of_measurements),
                    True)
+        self._send("INIT", True)
 
     def cdt_end(self):
-        success, reply = self._send("CDT:END?")
+        success, reply = self._send("CDT:END?", True)
         if not success:
             return None
 
@@ -225,15 +229,24 @@ class UviFreqMeter(FreqMeter):
 
     def cdt_get_values(self):
         values = {}
+
         success, reply = self._send("CDT:CDT?", True)
         if success:
-            values["cdt"] = float(reply)
+            values['cdt'] = []
+            for number in reply.split(","):
+                values['cdt'].append(int(number))
+
         success, reply = self._send("CDT:DNL?", True)
         if success:
-            values["dnl"] = float(reply)
+            values['dnl'] = []
+            for number in reply.split(","):
+                values['dnl'].append(float(number))
+
         success, reply = self._send("CDT:INL?", True)
         if success:
-            values["inl"] = float(reply)
+            values['inl'] = []
+            for number in reply.split(","):
+                values['inl'].append(float(number))
         return values
 
 
@@ -261,19 +274,43 @@ class AgilentFreqMeter(FreqMeter):
     def start_measurement(self, sample_time, channel, impedance):
         super(AgilentFreqMeter, self).start_measurement(sample_time, channel,
                                                         impedance)
+        # self.reset()
+        # self._send("*CLS")
+        # self._send("*SRE 0")
+        # self._send("*ESE 0")
+        # self._send(":STAT:PRES")
+        # self._send(":FREQ:ARM:STAR:SOUR IMM")
+        # self._send(":FREQ:ARM:STOP:SOUR TIM")
+        # self._send(":FREQ:ARM:STOP:TIM {}".format(sample_time))
+        # self._send(":FUNC 'FREQ {}".format(channel+1))
+        # self._send("INIT")
+
+        #Reset the counter and GPIB interface
+        #(53131A Programming guide page 3-46)
         self.reset()
         self._send("*CLS")
         self._send("*SRE 0")
         self._send("*ESE 0")
         self._send(":STAT:PRES")
+
+        #Make measurements appear in the instrument display too
+        #(53131A Programming guide page 112)
+        self._send(":DISP:MENU OFF")
+        self._send(":DISP:TEXT:FEED 'CALC2'")
+        self._send(":CALC2:LIM:DISP NUMBER")
+        self._send(":CALC:MATH:STATE OFF")
+        self._send(":CALC:IMM")
+
         self._send(":FREQ:ARM:STAR:SOUR IMM")
         self._send(":FREQ:ARM:STOP:SOUR TIM")
-        self._send(":FREQ:ARM:STOP:TIM {}".format(sample_time))
+        self._send(":FREQ:ARM:STOP:TIM {}".format(0.25*sample_time))
         self._send(":FUNC 'FREQ {}".format(channel+1))
         self._send("INIT")
 
     def _fetch_freq(self):
-        return self._send("FETC:FREQ?", True)
+        result = self._send("FETCH:FREQ?", True)
+        self._send("INIT")
+        return result
 
 
 class TestFreqMeter(FreqMeter):
@@ -307,3 +344,6 @@ class TestFreqMeter(FreqMeter):
         for index in range(3):
             values.append(random.gauss(10, 1+index))
         return True, "{},{},{}".format(values[0], values[1], values[2])
+
+    def coarse_calibration(self, M):
+        return

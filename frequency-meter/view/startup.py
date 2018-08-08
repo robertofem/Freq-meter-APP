@@ -459,9 +459,9 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
             self.ax.set_xlim(measurement_size - 100, measurement_size)
 
         # Print legends in the plot
+        handles, labels = self.ax.get_legend_handles_labels()
         plt.legend(bbox_to_anchor=(0., 1.02, 1., 0.102), loc=0, ncol=3,
                    mode="expand", borderaxespad=0., fontsize='xx-small')
-
         self.canvas.draw()
         return
 
@@ -530,7 +530,6 @@ class MainWindow(QtWidgets.QMainWindow, interface.Ui_MainWindow):
         self.log_handler.enabled[logging.WARN] = self.WarnCheck.isChecked()
         self.log_handler.enabled[logging.ERROR] = self.ErrorCheck.isChecked()
         return
-
 
 def run():
     # The QApplication object manages the application control flow and settings.

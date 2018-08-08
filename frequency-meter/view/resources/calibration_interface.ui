@@ -34,7 +34,7 @@
         <item>
          <layout class="QVBoxLayout" name="verticalLayout_2">
           <item>
-           <widget class="QGroupBox" name="reference_device">
+           <widget class="QGroupBox" name="reference_device_group">
             <property name="title">
              <string>Reference device</string>
             </property>
@@ -177,6 +177,9 @@
             </item>
             <item>
              <widget class="QPushButton" name="button_stop_coarse">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
               <property name="text">
                <string>Stop</string>
               </property>
@@ -223,6 +226,24 @@
         <item>
          <layout class="QVBoxLayout" name="verticalLayout_3">
           <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_3">
+            <item>
+             <widget class="QLabel" name="label">
+              <property name="text">
+               <string>Number of measurments for the Code Density Test (CDT)</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="lineEditFineMeas">
+              <property name="text">
+               <string>10000</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
            <layout class="QHBoxLayout" name="horizontalLayout_7">
             <item>
              <widget class="QPushButton" name="button_start_fine">
@@ -233,6 +254,9 @@
             </item>
             <item>
              <widget class="QPushButton" name="button_stop_fine">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
               <property name="text">
                <string>Stop</string>
               </property>
@@ -256,6 +280,16 @@
             </property>
             <property name="text">
              <string>Fine Calibration Messages</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="button_save_fine">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="text">
+             <string>Save in file</string>
             </property>
            </widget>
           </item>
@@ -290,7 +324,7 @@
     </widget>
    </item>
    <item row="0" column="1">
-    <widget class="QGroupBox" name="target_device">
+    <widget class="QGroupBox" name="target_device_group">
      <property name="title">
       <string>Target device (to be calibrated)</string>
      </property>
