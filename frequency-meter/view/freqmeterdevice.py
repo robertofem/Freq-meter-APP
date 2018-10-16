@@ -185,6 +185,8 @@ class UviFreqMeter(FreqMeter):
         self.reset()
         self._send("SENS:MODE:SAVELAST", True)
         self._send("SENS:FREQ:ALL:ARM:TIM {}".format(sample_time), True)
+        self._send("INPUT:ATT 6", True)
+        self._send("INPUT:COUP AC", True)
         self._send("INIT", True)
 
     def _fetch_freq(self):

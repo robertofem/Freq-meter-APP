@@ -1,0 +1,24 @@
+channels:
+  Quantity: '2'
+  SigTypes:
+    S1: fineCDT
+    S2: ''
+    S3: ''
+    S4: ''
+  Signals: '1'
+communications:
+  Properties:
+    CommProp1: '0'
+    CommProp2: 172.19.5.96
+    CommProp3: gpib0
+    CommProp4: '3'
+  Protocol: VISA-TCP/IP
+general:
+  FirmVersion: ''
+  Model: 53131A
+  Name: 53131A_1
+  Serial_N: ''
+  Vendor: Agilent
+impedance:
+  R1MOhm: 'True'
+  R50Ohm: 'True'
