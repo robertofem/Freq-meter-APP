@@ -1,0 +1,24 @@
+channels:
+  Quantity: '1'
+  SigTypes:
+    S1: coarse
+    S2: fine
+    S3: fineCDT
+    S4: ''
+  Signals: '3'
+communications:
+  Properties:
+    CommProp1: 172.19.5.94
+    CommProp2: '33001'
+    CommProp3: ''
+    CommProp4: ''
+  Protocol: TCP/IP
+general:
+  FirmVersion: ''
+  Model: ''
+  Name: FPGA-freq-meter
+  Serial_N: ''
+  Vendor: Uvigo
+impedance:
+  R1MOhm: 'True'
+  R50Ohm: 'True'
